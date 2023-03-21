@@ -143,8 +143,30 @@ void Testbench::do_median_mean_filter() {
     for (y = 0; y != height; ++y) {
         // first column
         x = 0;
-        // send all pixels in the mask to the filter
-        for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+
+        if (y == 0) {
+            // send all pixels in the mask to the filter
+            for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+                for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+                    if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+                        R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+                        G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+                        B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+                    } else {
+                        R = 0;
+                        G = 0;
+                        B = 0;
+                    }
+                    o_r.write(R);
+                    o_g.write(G);
+                    o_b.write(B);
+                    cnt++;
+                    wait(1); //emulate channel delay
+                }
+            }
+        } else {
+            // send the bottom most pixels in mask to the filter
+            v = 1;
             for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
@@ -221,8 +243,30 @@ void Testbench::do_median_mean_filter() {
     for (y = 0; y != height; ++y) {
         // first column
         x = 0;
-        // send all pixels in the mask to the filter
-        for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+
+        if (y == 0) {
+            // send all pixels in the mask to the filter
+            for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+                for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+                    if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+                        R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+                        G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+                        B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+                    } else {
+                        R = 0;
+                        G = 0;
+                        B = 0;
+                    }
+                    o_r.write(R);
+                    o_g.write(G);
+                    o_b.write(B);
+                    cnt++;
+                    wait(1); //emulate channel delay
+                }
+            }
+        } else {
+            // send the bottom most pixels in mask to the filter
+            v = 1;
             for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
@@ -247,7 +291,7 @@ void Testbench::do_median_mean_filter() {
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-
+        
         // for the remaining columns
         for (x = 1; x != width; ++x) {
             // send right most pixels in mask to the filter

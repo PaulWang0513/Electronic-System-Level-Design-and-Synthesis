@@ -13,6 +13,7 @@ MedianMeanFilter::MedianMeanFilter(sc_module_name n) : sc_module(n) {
 }
 
 void MedianMeanFilter::do_median_filter() {
+    bool first_row = true;
     int col = 0;    // to record the column of current pixel
     while (true) {
         // waiting for enable signal
@@ -23,11 +24,30 @@ void MedianMeanFilter::do_median_filter() {
         int idx = 0;
         // get all pixels in the filter
         if (col == 0) { // first column
-            // buffer all grey values
-            for (unsigned int v = 0; v < MASK_Y; ++v) {
+            if (first_row) {
+                first_row = false;
+                // buffer all grey values
+                for (unsigned int v = 0; v < MASK_Y; ++v) {
+                    for (unsigned int u = 0; u < MASK_X; ++u) {
+                        unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                        buffer[0][v][u] = grey;
+                        buffer[1][v][u] = grey; // for the first column of next row
+                        val[idx++] = (int)grey;
+                    }
+                }
+            } else {
+                // get pixels from buffer, and the bottom most pixels from input
+                for (unsigned int v = 0; v < MASK_Y-1; ++v) {
+                    for (unsigned int u = 0; u < MASK_X; ++u) {
+                        buffer[1][v][u] = buffer[1][v+1][u];
+                        buffer[0][v][u] = buffer[1][v][u];  // for the first column of next row
+                        val[idx++] = (int)buffer[1][v][u];
+                    }
+                }
                 for (unsigned int u = 0; u < MASK_X; ++u) {
                     unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
-                    buffer[0][v][u] = grey;
+                    buffer[1][MASK_Y-1][u] = grey;
+                    buffer[0][MASK_Y-1][u] = grey;  // for the first column of next row
                     val[idx++] = (int)grey;
                 }
             }
@@ -72,20 +92,41 @@ void MedianMeanFilter::do_median_filter() {
 const int mask[MASK_X][MASK_Y] = {{1, 1, 1}, {1, 2, 1}, {1, 1, 1}};
 
 void MedianMeanFilter::do_mean_filter() {
+    bool first_row = true;
     int col = 0;    // to record the column of current pixel
     while (true) {
         // waiting for enable signal
         while (i_en_mean.read() == false) {
             wait();
         }
+
         val[0] = 0;
         if (col == 0) { // first column
-            // buffer all grey values
-            for (unsigned int v = 0; v < MASK_Y; ++v) {
+            if (first_row) {
+                first_row = false;
+                // buffer all grey values
+                for (unsigned int v = 0; v < MASK_Y; ++v) {
+                    for (unsigned int u = 0; u < MASK_X; ++u) {
+                        unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                        buffer[0][v][u] = grey;
+                        buffer[1][v][u] = grey; // for the first column of next row
+                        val[0] += grey * mask[v][u];
+                    }
+                }
+            } else {
+                // get pixels from buffer, and the bottom most pixels from input
+                for (unsigned int v = 0; v < MASK_Y-1; ++v) {
+                    for (unsigned int u = 0; u < MASK_X; ++u) {
+                        buffer[1][v][u] = buffer[1][v+1][u];
+                        buffer[0][v][u] = buffer[1][v][u];  // for the first column of next row
+                        val[0] += buffer[1][v][u] * mask[v][u];
+                    }
+                }
                 for (unsigned int u = 0; u < MASK_X; ++u) {
                     unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
-                    buffer[0][v][u] = grey;
-                    val[0] += grey * mask[v][u];
+                    buffer[1][MASK_Y-1][u] = grey;
+                    buffer[0][MASK_Y-1][u] = grey;  // for the first column of next row
+                    val[0] += grey * mask[MASK_Y-1][u];
                 }
             }
         } else {    // other columns
