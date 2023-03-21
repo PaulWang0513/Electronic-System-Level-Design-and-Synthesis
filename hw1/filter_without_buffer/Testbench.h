@@ -11,45 +11,45 @@ using namespace sc_core;
 
 class Testbench : public sc_module {
 public:
-  sc_in_clk i_clk;
-  sc_out<bool> o_rst;
-  sc_out<bool> o_en_median;
-  sc_out<bool> o_en_mean;
-  sc_fifo_out<unsigned char> o_r;
-  sc_fifo_out<unsigned char> o_g;
-  sc_fifo_out<unsigned char> o_b;
-  sc_fifo_in<int> i_result;
+    sc_in_clk i_clk;
+    sc_out<bool> o_rst;
+    sc_out<bool> o_en_median;
+    sc_out<bool> o_en_mean;
+    sc_fifo_out<unsigned char> o_r;
+    sc_fifo_out<unsigned char> o_g;
+    sc_fifo_out<unsigned char> o_b;
+    sc_fifo_in<int> i_result;
 
-  SC_HAS_PROCESS(Testbench);
+    SC_HAS_PROCESS(Testbench);
 
-  Testbench(sc_module_name n);
-  ~Testbench() = default;
+    Testbench(sc_module_name n);
+    ~Testbench() = default;
 
-  int read_bmp(string infile_name);
-  int write_bmp(string outfile_name);
+    int read_bmp(string infile_name);
+    int write_bmp(string outfile_name);
 
-  unsigned int get_width() { return width; }
+    unsigned int get_width() { return width; }
 
-  unsigned int get_height() { return height; }
+    unsigned int get_height() { return height; }
 
-  unsigned int get_width_bytes() { return width_bytes; }
+    unsigned int get_width_bytes() { return width_bytes; }
 
-  unsigned int get_bytes_per_pixel() { return bytes_per_pixel; }
+    unsigned int get_bytes_per_pixel() { return bytes_per_pixel; }
 
-  unsigned char *get_source_image() { return source_bitmap; }
-  unsigned char *get_target_image() { return target_bitmap; }
+    unsigned char *get_source_image() { return source_bitmap; }
+    unsigned char *get_target_image() { return target_bitmap; }
 
 private:
-  unsigned int input_rgb_raw_data_offset;
-  const unsigned int output_rgb_raw_data_offset;
-  int width;
-  int height;
-  unsigned int width_bytes;
-  unsigned char bits_per_pixel;
-  unsigned short bytes_per_pixel;
-  unsigned char *source_bitmap;
-  unsigned char *target_bitmap;
+    unsigned int input_rgb_raw_data_offset;
+    const unsigned int output_rgb_raw_data_offset;
+    int width;
+    int height;
+    unsigned int width_bytes;
+    unsigned char bits_per_pixel;
+    unsigned short bytes_per_pixel;
+    unsigned char *source_bitmap;
+    unsigned char *target_bitmap;
 
-  void do_median_mean_filter();
+    void do_median_mean_filter();
 };
 #endif
