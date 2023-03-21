@@ -1,4 +1,5 @@
 # hw1
+- This folder includes all files for homework 1 (Median and Mean Filter).
 - [filter_with_buffer](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw1/filter_with_buffer): the folder that includes all the files implementing the filter module with buffer.
   - Please checkout the README inside the folder to see how to run the modules.
 - [filter_without_buffer](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw1/filter_without_buffer): the folder that includes all the files implementing the filter module without buffer.
