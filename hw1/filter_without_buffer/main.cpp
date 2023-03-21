@@ -54,6 +54,7 @@ int sc_main(int argc, char **argv) {
   median_mean_filter.i_b(b);
   median_mean_filter.o_result(result);
 
+  cout << "input file name : " << argv[1] << endl;
   tb.read_bmp(argv[1]);
   sc_start();
   std::cout << "Simulated time == " << sc_core::sc_time_stamp() << std::endl;

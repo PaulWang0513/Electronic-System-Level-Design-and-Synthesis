@@ -32,19 +32,13 @@ add_executable(median_mean ${SRC})
 target_link_libraries(median_mean SystemC::systemc)
 
 # Add test median_mean filter command
+set(INPUT_FILE "jetplane_noise.bmp")
 set(OUT_FILE "out.bmp")
 add_custom_command(OUTPUT ${OUT_FILE}
-	COMMAND ./median_mean ../jetplane_noise.bmp ./${OUT_FILE}
+	COMMAND ./median_mean ../../noise_images/${INPUT_FILE} ../output/${OUT_FILE}
 	DEPENDS median_mean
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}	
 )
 add_custom_target(run 
 	DEPENDS ${OUT_FILE}
 )
-
-# # Compare output & golden
-# add_custom_target(check
-# 	COMMAND diff -s ${CMAKE_BINARY_DIR}/${OUT_FILE} jetplane.bmp
-# 	DEPENDS run
-# 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}	
-# )
