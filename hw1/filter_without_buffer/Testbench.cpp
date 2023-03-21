@@ -119,6 +119,7 @@ int Testbench::write_bmp(string outfile_name) {
 }
 
 void Testbench::do_median_mean_filter() {
+    int cnt = 0;    // count the number of pixel transfer
     int x, y, v, u;        // for loop counter
     unsigned char R, G, B; // color of R, G, B
     int adjustX, adjustY, xBound, yBound;
@@ -156,6 +157,7 @@ void Testbench::do_median_mean_filter() {
                     o_r.write(R);
                     o_g.write(G);
                     o_b.write(B);
+                    cnt++;
                     wait(1); //emulate channel delay
                 }
             }
@@ -209,6 +211,7 @@ void Testbench::do_median_mean_filter() {
                     o_r.write(R);
                     o_g.write(G);
                     o_b.write(B);
+                    cnt++;
                     wait(1); //emulate channel delay
                 }
             }
@@ -226,5 +229,6 @@ void Testbench::do_median_mean_filter() {
     o_en_mean.write(false);
     printf("Mean filter done\n");
 
+    printf("Total pixel transfer: %d\n", cnt);
     sc_stop();
 }
