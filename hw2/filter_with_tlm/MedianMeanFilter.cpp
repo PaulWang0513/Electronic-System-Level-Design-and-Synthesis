@@ -1,27 +1,21 @@
 #include <cmath>
+#include <iomanip>
 
 #include "MedianMeanFilter.h"
 
-MedianMeanFilter::MedianMeanFilter(sc_module_name n) : sc_module(n) {
+MedianMeanFilter::MedianMeanFilter(sc_module_name n)
+    : sc_module(n), t_skt("t_skt"), base_offset(0) {
     SC_THREAD(do_median_filter);
-    sensitive << i_clk.pos();
-    dont_initialize();
     SC_THREAD(do_mean_filter);
-    sensitive << i_clk.pos();
-    dont_initialize();
-    reset_signal_is(i_rst, false);
+
+    t_skt.register_b_transport(this, &MedianMeanFilter::blocking_transport);
 }
 
 void MedianMeanFilter::do_median_filter() {
     bool first_row = true;
     int col = 0;    // to record the column of current pixel
     while (true) {
-        // waiting for enable signal
-        while (i_en_median.read() == false) {
-            wait();
-        }
-        
-        int idx = 0;
+        int idx = 0;    // index of val
         // get all pixels in the filter
         if (col == 0) { // first column
             if (first_row) {
@@ -29,10 +23,10 @@ void MedianMeanFilter::do_median_filter() {
                 // buffer all grey values
                 for (unsigned int v = 0; v < MASK_Y; ++v) {
                     for (unsigned int u = 0; u < MASK_X; ++u) {
-                        unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                        unsigned char grey = (i_r_median.read() + i_g_median.read() + i_b_median.read()) / 3;
                         buffer[0][v][u] = grey;
                         buffer[1][v][u] = grey; // for the first column of next row
-                        val[idx++] = (int)grey;
+                        val_median[idx++] = (int)grey;
                     }
                 }
             } else {
@@ -41,14 +35,14 @@ void MedianMeanFilter::do_median_filter() {
                     for (unsigned int u = 0; u < MASK_X; ++u) {
                         buffer[1][v][u] = buffer[1][v+1][u];
                         buffer[0][v][u] = buffer[1][v][u];  // for the first column of next row
-                        val[idx++] = (int)buffer[1][v][u];
+                        val_median[idx++] = (int)buffer[1][v][u];
                     }
                 }
                 for (unsigned int u = 0; u < MASK_X; ++u) {
-                    unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                    unsigned char grey = (i_r_median.read() + i_g_median.read() + i_b_median.read()) / 3;
                     buffer[1][MASK_Y-1][u] = grey;
                     buffer[0][MASK_Y-1][u] = grey;  // for the first column of next row
-                    val[idx++] = (int)grey;
+                    val_median[idx++] = (int)grey;
                 }
             }
         } else {    // other columns
@@ -56,36 +50,35 @@ void MedianMeanFilter::do_median_filter() {
             for (unsigned int v = 0; v < MASK_Y; ++v) {
                 for (unsigned int u = 0; u < MASK_X-1; ++u) {
                     buffer[0][v][u] = buffer[0][v][u+1];
-                    val[idx++] = (int)buffer[0][v][u];
+                    val_median[idx++] = (int)buffer[0][v][u];
                 }
-                unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                unsigned char grey = (i_r_median.read() + i_g_median.read() + i_b_median.read()) / 3;
                 buffer[0][v][MASK_X-1] = grey;
-                val[idx++] = (int)grey;
+                val_median[idx++] = (int)grey;
             }
         }
 
         // sort grey values
         for (unsigned int i = 0; i < MASK_X*MASK_Y-1; ++i) {
             for (unsigned int j = i + 1; j < MASK_X*MASK_Y; ++j) {
-                if (val[i] > val[j]) {
-                    int temp = val[i];
-                    val[i] = val[j];
-                    val[j] = temp;
+                if (val_median[i] > val_median[j]) {
+                    int temp = val_median[i];
+                    val_median[i] = val_median[j];
+                    val_median[j] = temp;
                 }
             }
         }
         // output median
         int median;
         if (MASK_X*MASK_Y % 2 == 0) {
-            median = (val[MASK_X*MASK_Y / 2] + val[MASK_X*MASK_Y / 2 + 1]) / 2;
+            median = (val_median[MASK_X*MASK_Y / 2] + val_median[MASK_X*MASK_Y / 2 + 1]) / 2;
         } else {
-            median = val[(int)floor(MASK_X*MASK_Y / 2)];
+            median = val_median[(int)floor(MASK_X*MASK_Y / 2)];
         }
-        o_result.write(median);
+        o_result_median.write(median);
 
         // move to next column
         col = (col + 1) % 512;
-        wait(10); //emulate module delay
     }
 }
 
@@ -95,22 +88,18 @@ void MedianMeanFilter::do_mean_filter() {
     bool first_row = true;
     int col = 0;    // to record the column of current pixel
     while (true) {
-        // waiting for enable signal
-        while (i_en_mean.read() == false) {
-            wait();
-        }
-
-        val[0] = 0;
+        val_mean = 0; // flush val
+        // get all pixels in the filter
         if (col == 0) { // first column
             if (first_row) {
                 first_row = false;
                 // buffer all grey values
                 for (unsigned int v = 0; v < MASK_Y; ++v) {
                     for (unsigned int u = 0; u < MASK_X; ++u) {
-                        unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                        unsigned char grey = (i_r_mean.read() + i_g_mean.read() + i_b_mean.read()) / 3;
                         buffer[0][v][u] = grey;
                         buffer[1][v][u] = grey; // for the first column of next row
-                        val[0] += grey * mask[v][u];
+                        val_mean += grey * mask[v][u];
                     }
                 }
             } else {
@@ -119,14 +108,14 @@ void MedianMeanFilter::do_mean_filter() {
                     for (unsigned int u = 0; u < MASK_X; ++u) {
                         buffer[1][v][u] = buffer[1][v+1][u];
                         buffer[0][v][u] = buffer[1][v][u];  // for the first column of next row
-                        val[0] += buffer[1][v][u] * mask[v][u];
+                        val_mean += buffer[1][v][u] * mask[v][u];
                     }
                 }
                 for (unsigned int u = 0; u < MASK_X; ++u) {
-                    unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                    unsigned char grey = (i_r_mean.read() + i_g_mean.read() + i_b_mean.read()) / 3;
                     buffer[1][MASK_Y-1][u] = grey;
                     buffer[0][MASK_Y-1][u] = grey;  // for the first column of next row
-                    val[0] += grey * mask[MASK_Y-1][u];
+                    val_mean += grey * mask[MASK_Y-1][u];
                 }
             }
         } else {    // other columns
@@ -134,20 +123,95 @@ void MedianMeanFilter::do_mean_filter() {
             for (unsigned int v = 0; v < MASK_Y; ++v) {
                 for (unsigned int u = 0; u < MASK_X-1; ++u) {
                     buffer[0][v][u] = buffer[0][v][u+1];
-                    val[0] += buffer[0][v][u] * mask[v][u];
+                    val_mean += buffer[0][v][u] * mask[v][u];
                 }
-                unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+                unsigned char grey = (i_r_mean.read() + i_g_mean.read() + i_b_mean.read()) / 3;
                 buffer[0][v][MASK_X-1] = grey;
-                val[0] += grey * mask[v][MASK_X-1];
+                val_mean += grey * mask[v][MASK_X-1];
             }
         }
 
         // output mean
-        int mean = val[0] / 10;
-        o_result.write(mean);
+        int mean = val_mean / 10;
+        o_result_mean.write(mean);
 
         // move to next column
         col = (col + 1) % 512;
-        wait(10); //emulate module delay
     }
+}
+
+void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
+                                          sc_core::sc_time &delay) {
+    sc_dt::uint64 addr = payload.get_address();
+    addr = addr - base_offset;
+    unsigned char *mask_ptr = payload.get_byte_enable_ptr();
+    unsigned char *data_ptr = payload.get_data_ptr();
+    word buffer;
+    switch (payload.get_command()) {
+    case tlm::TLM_READ_COMMAND:
+        switch (addr) {
+        case MEDIAN_FILTER_RESULT_ADDR:
+            buffer.uint = o_result_median.read();
+            break;
+        case MEDIAN_FILTER_CHECK_ADDR:
+            buffer.uint = o_result_median.num_available();
+            break;
+        case MEAN_FILTER_RESULT_ADDR:
+            buffer.uint = o_result_mean.read();
+            break;
+        case MEAN_FILTER_CHECK_ADDR:
+            buffer.uint = o_result_mean.num_available();
+            break;
+        default:
+            std::cerr << "Error! MedianMeanFilter::blocking_transport: address 0x"
+                        << std::setfill('0') << std::setw(8) << std::hex << addr
+                        << std::dec << " is not valid" << std::endl;
+            break;
+        }
+        data_ptr[0] = buffer.uc[0];
+        data_ptr[1] = buffer.uc[1];
+        data_ptr[2] = buffer.uc[2];
+        data_ptr[3] = buffer.uc[3];
+        break;
+
+    case tlm::TLM_WRITE_COMMAND:
+        switch (addr) {
+        case MEDIAN_FILTER_R_ADDR:
+            if (mask_ptr[0] == 0xff) {
+                i_r_median.write(data_ptr[0]);
+            }
+            if (mask_ptr[1] == 0xff) {
+                i_g_median.write(data_ptr[1]);
+            }
+            if (mask_ptr[2] == 0xff) {
+                i_b_median.write(data_ptr[2]);
+            }
+            break;
+        case MEAN_FILTER_R_ADDR:
+            if (mask_ptr[0] == 0xff) {
+                i_r_mean.write(data_ptr[0]);
+            }
+            if (mask_ptr[1] == 0xff) {
+                i_g_mean.write(data_ptr[1]);
+            }
+            if (mask_ptr[2] == 0xff) {
+                i_b_mean.write(data_ptr[2]);
+            }
+            break;
+        default:
+            std::cerr << "Error! MedianMeanFilter::blocking_transport: address 0x"
+                        << std::setfill('0') << std::setw(8) << std::hex << addr
+                        << std::dec << " is not valid" << std::endl;
+            break;
+        }
+        break;
+
+    case tlm::TLM_IGNORE_COMMAND:
+        payload.set_response_status(tlm::TLM_GENERIC_ERROR_RESPONSE);
+        return;
+    default:
+        payload.set_response_status(tlm::TLM_GENERIC_ERROR_RESPONSE);
+        return;
+    }
+    payload.set_response_status(tlm::TLM_OK_RESPONSE); // Always OK
 }

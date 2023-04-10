@@ -26,10 +26,8 @@ unsigned char header[54] = {
 };
 
 Testbench::Testbench(sc_module_name n)
-    : sc_module(n), output_rgb_raw_data_offset(54) {
+    : sc_module(n), initiator("initiator"), output_rgb_raw_data_offset(54) {
     SC_THREAD(do_median_mean_filter);
-    sensitive << i_clk.pos();
-    dont_initialize();
 }
 
 int Testbench::read_bmp(string infile_name) {
@@ -69,8 +67,7 @@ int Testbench::read_bmp(string infile_name) {
     }
 
     printf("Image width=%d, height=%d\n", width, height);
-    assert(fread(source_bitmap, sizeof(unsigned char),
-                (size_t)(long)width * height * bytes_per_pixel, fp_s));
+    assert(fread(source_bitmap, sizeof(unsigned char), (size_t)(long)width * height * bytes_per_pixel, fp_s));
     fclose(fp_s);
     return 0;
 }
@@ -119,24 +116,23 @@ int Testbench::write_bmp(string outfile_name) {
 }
 
 void Testbench::do_median_mean_filter() {
-    int cnt = 0;    // count the number of pixel transfer
     int x, y, v, u;        // for loop counter
     unsigned char R, G, B; // color of R, G, B
     int adjustX, adjustY, xBound, yBound;
     int total;
+
+    word data;
+    unsigned char mask[4];
+    bool done = false;
+    int output_num = 0;
+    //wait(5 * CLOCK_PERIOD, SC_NS);
 
     adjustX = (MASK_X % 2) ? 1 : 0; // 1
     adjustY = (MASK_Y % 2) ? 1 : 0; // 1
     xBound = MASK_X / 2;            // 1
     yBound = MASK_Y / 2;            // 1
     
-    o_rst.write(false);
-    o_en_median.write(false);
-    o_en_mean.write(false);
-    o_rst.write(true);
-
-    // start median filter
-    o_en_median.write(true);
+    // Median filter start here
     printf("Median filter start ...\n");
 
     // for each pixel
@@ -157,11 +153,15 @@ void Testbench::do_median_mean_filter() {
                         G = 0;
                         B = 0;
                     }
-                    o_r.write(R);
-                    o_g.write(G);
-                    o_b.write(B);
-                    cnt++;
-                    wait(1); //emulate channel delay
+                    data.uc[0] = R;
+                    data.uc[1] = G;
+                    data.uc[2] = B;
+                    mask[0] = 0xff;
+                    mask[1] = 0xff;
+                    mask[2] = 0xff;
+                    mask[3] = 0;
+                    initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
+                    wait(1 * CLOCK_PERIOD, SC_NS);
                 }
             }
         } else {
@@ -177,16 +177,30 @@ void Testbench::do_median_mean_filter() {
                     G = 0;
                     B = 0;
                 }
-                o_r.write(R);
-                o_g.write(G);
-                o_b.write(B);
-                cnt++;
-                wait(1); //emulate channel delay
+                data.uc[0] = R;
+                data.uc[1] = G;
+                data.uc[2] = B;
+                mask[0] = 0xff;
+                mask[1] = 0xff;
+                mask[2] = 0xff;
+                mask[3] = 0;
+                initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
+                wait(1 * CLOCK_PERIOD, SC_NS);
             }
         }
         // get result from filter
-        if(i_result.num_available()==0) wait(i_result.data_written_event());
-        total = i_result.read();
+        done = false;
+        output_num = 0;
+        while(!done){
+            initiator.read_from_socket(MEDIAN_FILTER_CHECK_ADDR, mask, data.uc, 4);
+            output_num = data.sint;
+            if(output_num>0) done=true;
+        }
+        wait(10 * CLOCK_PERIOD, SC_NS);
+        initiator.read_from_socket(MEDIAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
+        total = data.sint;
+        //debug
+        //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
@@ -206,16 +220,30 @@ void Testbench::do_median_mean_filter() {
                     G = 0;
                     B = 0;
                 }
-                o_r.write(R);
-                o_g.write(G);
-                o_b.write(B);
-                cnt++;
-                wait(1); //emulate channel delay
+                data.uc[0] = R;
+                data.uc[1] = G;
+                data.uc[2] = B;
+                mask[0] = 0xff;
+                mask[1] = 0xff;
+                mask[2] = 0xff;
+                mask[3] = 0;
+                initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
+                wait(1 * CLOCK_PERIOD, SC_NS);
             }
 
             // get result from filter
-            if(i_result.num_available()==0) wait(i_result.data_written_event());
-            total = i_result.read();
+            done = false;
+            output_num = 0;
+            while(!done){
+                initiator.read_from_socket(MEDIAN_FILTER_CHECK_ADDR, mask, data.uc, 4);
+                output_num = data.sint;
+                if(output_num>0) done=true;
+            }
+            wait(10 * CLOCK_PERIOD, SC_NS);
+            initiator.read_from_socket(MEDIAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
+            total = data.sint;
+            //debug
+            //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
@@ -223,8 +251,10 @@ void Testbench::do_median_mean_filter() {
         }
     }
 
-    o_en_median.write(false);
+    // Median filter end here
     printf("Median filter done\n");
+
+    wait(10 * CLOCK_PERIOD, SC_NS);
 
     // copy from target_bitmap to source_bitmap
     for (y = 0; y != height; ++y) {
@@ -235,10 +265,11 @@ void Testbench::do_median_mean_filter() {
         }
     }
 
-    // start mean filter
-    o_en_mean.write(true);
+    wait(10 * CLOCK_PERIOD, SC_NS);
+
+    // Mean filter start here
     printf("Mean filter start ...\n");
-  
+
     // for each pixel
     for (y = 0; y != height; ++y) {
         // first column
@@ -257,11 +288,15 @@ void Testbench::do_median_mean_filter() {
                         G = 0;
                         B = 0;
                     }
-                    o_r.write(R);
-                    o_g.write(G);
-                    o_b.write(B);
-                    cnt++;
-                    wait(1); //emulate channel delay
+                    data.uc[0] = R;
+                    data.uc[1] = G;
+                    data.uc[2] = B;
+                    mask[0] = 0xff;
+                    mask[1] = 0xff;
+                    mask[2] = 0xff;
+                    mask[3] = 0;
+                    initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
+                    wait(1 * CLOCK_PERIOD, SC_NS);
                 }
             }
         } else {
@@ -277,16 +312,30 @@ void Testbench::do_median_mean_filter() {
                     G = 0;
                     B = 0;
                 }
-                o_r.write(R);
-                o_g.write(G);
-                o_b.write(B);
-                cnt++;
-                wait(1); //emulate channel delay
+                data.uc[0] = R;
+                data.uc[1] = G;
+                data.uc[2] = B;
+                mask[0] = 0xff;
+                mask[1] = 0xff;
+                mask[2] = 0xff;
+                mask[3] = 0;
+                initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
+                wait(1 * CLOCK_PERIOD, SC_NS);
             }
         }
         // get result from filter
-        if(i_result.num_available()==0) wait(i_result.data_written_event());
-        total = i_result.read();
+        done = false;
+        output_num = 0;
+        while(!done){
+            initiator.read_from_socket(MEAN_FILTER_CHECK_ADDR, mask, data.uc, 4);
+            output_num = data.sint;
+            if(output_num>0) done=true;
+        }
+        wait(10 * CLOCK_PERIOD, SC_NS);
+        initiator.read_from_socket(MEAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
+        total = data.sint;
+        //debug
+        //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
@@ -306,16 +355,30 @@ void Testbench::do_median_mean_filter() {
                     G = 0;
                     B = 0;
                 }
-                o_r.write(R);
-                o_g.write(G);
-                o_b.write(B);
-                cnt++;
-                wait(1); //emulate channel delay
+                data.uc[0] = R;
+                data.uc[1] = G;
+                data.uc[2] = B;
+                mask[0] = 0xff;
+                mask[1] = 0xff;
+                mask[2] = 0xff;
+                mask[3] = 0;
+                initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
+                wait(1 * CLOCK_PERIOD, SC_NS);
             }
 
             // get result from filter
-            if(i_result.num_available()==0) wait(i_result.data_written_event());
-            total = i_result.read();
+            done = false;
+            output_num = 0;
+            while(!done){
+                initiator.read_from_socket(MEAN_FILTER_CHECK_ADDR, mask, data.uc, 4);
+                output_num = data.sint;
+                if(output_num>0) done=true;
+            }
+            wait(10 * CLOCK_PERIOD, SC_NS);
+            initiator.read_from_socket(MEAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
+            total = data.sint;
+            //debug
+            //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
 
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
@@ -323,9 +386,69 @@ void Testbench::do_median_mean_filter() {
         }
     }
 
-    o_en_mean.write(false);
+    // Mean filter end here
     printf("Mean filter done\n");
 
-    printf("Total pixel transfer: %d\n", cnt);
     sc_stop();
 }
+
+
+//   for (y = 0; y != height; ++y) {
+//     for (x = 0; x != width; ++x) {
+//       adjustX = (MASK_X % 2) ? 1 : 0; // 1
+//       adjustY = (MASK_Y % 2) ? 1 : 0; // 1
+//       xBound = MASK_X / 2;            // 1
+//       yBound = MASK_Y / 2;            // 1
+
+//       for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+//         for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+//           if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+//             R = *(source_bitmap +
+//                   bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+//             G = *(source_bitmap +
+//                   bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+//             B = *(source_bitmap +
+//                   bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+//           } else {
+//             R = 0;
+//             G = 0;
+//             B = 0;
+//           }
+//           data.uc[0] = R;
+//           data.uc[1] = G;
+//           data.uc[2] = B;
+//           mask[0] = 0xff;
+//           mask[1] = 0xff;
+//           mask[2] = 0xff;
+//           mask[3] = 0;
+//           initiator.write_to_socket(SOBEL_FILTER_R_ADDR, mask, data.uc, 4);
+//           wait(1 * CLOCK_PERIOD, SC_NS);
+//         }
+//       }
+
+//       bool done=false;
+//       int output_num=0;
+//       while(!done){
+//         initiator.read_from_socket(SOBEL_FILTER_CHECK_ADDR, mask, data.uc, 4);
+//         output_num = data.sint;
+//         if(output_num>0) done=true;
+//       }
+//       wait(10 * CLOCK_PERIOD, SC_NS);
+//       initiator.read_from_socket(SOBEL_FILTER_RESULT_ADDR, mask, data.uc, 4);
+//       total = data.sint;
+//       //debug
+//       //cout << "Now at " << sc_time_stamp() << endl; //print current sc_time
+
+//       if (total - THRESHOLD >= 0) {
+//         // black
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = BLACK;
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = BLACK;
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = BLACK;
+//       } else {
+//         // white
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = WHITE;
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = WHITE;
+//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = WHITE;
+//       }
+//     }
+//   }
