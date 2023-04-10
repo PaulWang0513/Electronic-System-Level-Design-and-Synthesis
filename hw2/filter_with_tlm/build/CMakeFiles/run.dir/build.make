@@ -70,7 +70,7 @@ CMakeFiles/run: out.bmp
 
 out.bmp: median_mean
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/user/ee6470/Electronic-System-Level-Design-and-Synthesis/hw2/filter_with_tlm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating out.bmp"
-	./median_mean ../../noise_images/jetplane_noise.bmp ../output/out.bmp
+	./median_mean ../../noise_images/lake_noise.bmp ../output/out.bmp
 
 run: CMakeFiles/run
 run: out.bmp

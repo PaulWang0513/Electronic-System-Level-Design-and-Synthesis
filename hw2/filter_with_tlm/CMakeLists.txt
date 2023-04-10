@@ -32,7 +32,7 @@ add_executable(median_mean ${SRC})
 target_link_libraries(median_mean SystemC::systemc)
 
 # Add test median_mean filter command
-set(INPUT_FILE "jetplane_noise.bmp")
+set(INPUT_FILE "lake_noise.bmp")
 set(OUT_FILE "out.bmp")
 add_custom_command(OUTPUT ${OUT_FILE}
 	COMMAND ./median_mean ../../noise_images/${INPUT_FILE} ../output/${OUT_FILE}

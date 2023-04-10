@@ -157,6 +157,8 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
             break;
         case MEDIAN_FILTER_CHECK_ADDR:
             buffer.uint = o_result_median.num_available();
+            // model the delay of reading data
+            wait(1 * CLOCK_PERIOD, SC_NS);
             break;
         case MEAN_FILTER_RESULT_ADDR:
             buffer.uint = o_result_mean.read();
@@ -165,6 +167,8 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
             break;
         case MEAN_FILTER_CHECK_ADDR:
             buffer.uint = o_result_mean.num_available();
+            // model the delay of reading data
+            wait(1 * CLOCK_PERIOD, SC_NS);
             break;
         default:
             std::cerr << "Error! MedianMeanFilter::blocking_transport: address 0x"
@@ -209,7 +213,7 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
             break;
         }
         // model the delay of writing data
-        wait(1 * CLOCK_PERIOD, SC_NS);
+        wait(5 * CLOCK_PERIOD, SC_NS);
         break;
 
     case tlm::TLM_IGNORE_COMMAND:
