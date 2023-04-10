@@ -79,6 +79,7 @@ void MedianMeanFilter::do_median_filter() {
 
         // move to next column
         col = (col + 1) % 512;
+        wait(10 * CLOCK_PERIOD, SC_NS);
     }
 }
 
@@ -137,6 +138,7 @@ void MedianMeanFilter::do_mean_filter() {
 
         // move to next column
         col = (col + 1) % 512;
+        wait(10 * CLOCK_PERIOD, SC_NS);
     }
 }
 
@@ -172,6 +174,7 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
         data_ptr[1] = buffer.uc[1];
         data_ptr[2] = buffer.uc[2];
         data_ptr[3] = buffer.uc[3];
+        wait(1 * CLOCK_PERIOD, SC_NS);
         break;
 
     case tlm::TLM_WRITE_COMMAND:
@@ -204,6 +207,7 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
                         << std::dec << " is not valid" << std::endl;
             break;
         }
+        wait(1 * CLOCK_PERIOD, SC_NS);
         break;
 
     case tlm::TLM_IGNORE_COMMAND:
