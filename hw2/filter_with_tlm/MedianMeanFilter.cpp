@@ -79,7 +79,6 @@ void MedianMeanFilter::do_median_filter() {
 
         // move to next column
         col = (col + 1) % 512;
-        wait(10 * CLOCK_PERIOD, SC_NS);
     }
 }
 
@@ -138,7 +137,6 @@ void MedianMeanFilter::do_mean_filter() {
 
         // move to next column
         col = (col + 1) % 512;
-        wait(10 * CLOCK_PERIOD, SC_NS);
     }
 }
 
@@ -154,12 +152,16 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
         switch (addr) {
         case MEDIAN_FILTER_RESULT_ADDR:
             buffer.uint = o_result_median.read();
+            // model the delay of the filter
+            wait(10 * CLOCK_PERIOD, SC_NS);
             break;
         case MEDIAN_FILTER_CHECK_ADDR:
             buffer.uint = o_result_median.num_available();
             break;
         case MEAN_FILTER_RESULT_ADDR:
             buffer.uint = o_result_mean.read();
+            // model the delay of the filter
+            wait(10 * CLOCK_PERIOD, SC_NS);
             break;
         case MEAN_FILTER_CHECK_ADDR:
             buffer.uint = o_result_mean.num_available();
@@ -174,7 +176,6 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
         data_ptr[1] = buffer.uc[1];
         data_ptr[2] = buffer.uc[2];
         data_ptr[3] = buffer.uc[3];
-        wait(1 * CLOCK_PERIOD, SC_NS);
         break;
 
     case tlm::TLM_WRITE_COMMAND:
@@ -207,6 +208,7 @@ void MedianMeanFilter::blocking_transport(tlm::tlm_generic_payload &payload,
                         << std::dec << " is not valid" << std::endl;
             break;
         }
+        // model the delay of writing data
         wait(1 * CLOCK_PERIOD, SC_NS);
         break;
 
