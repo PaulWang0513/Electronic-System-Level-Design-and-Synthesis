@@ -27,9 +27,16 @@ int sc_main(int argc, char **argv) {
 
     std::cout << "input file name : " << argv[1] << endl;
     tb.read_bmp(argv[1]);
+
+    gettimeofday(&start_time, NULL);
     sc_start();
+    gettimeofday(&end_time, NULL);
+
     std::cout << "Simulated time == " << sc_core::sc_time_stamp() << std::endl;
     tb.write_bmp(argv[2]);
 
+    std::cout << "==========" << std::endl;
+    std::cout << "Simultation time == " << (end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec) << " us" << std::endl;
+    
     return 0;
 }

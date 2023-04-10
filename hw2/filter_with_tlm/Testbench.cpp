@@ -160,7 +160,6 @@ void Testbench::do_median_mean_filter() {
                     mask[2] = 0xff;
                     mask[3] = 0;
                     initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
-                    // wait(1 * CLOCK_PERIOD, SC_NS);
                 }
             }
         } else {
@@ -184,7 +183,6 @@ void Testbench::do_median_mean_filter() {
                 mask[2] = 0xff;
                 mask[3] = 0;
                 initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
-                // wait(1 * CLOCK_PERIOD, SC_NS);
             }
         }
         // get result from filter
@@ -195,7 +193,6 @@ void Testbench::do_median_mean_filter() {
             output_num = data.sint;
             if(output_num>0) done=true;
         }
-        // wait(10 * CLOCK_PERIOD, SC_NS);
         initiator.read_from_socket(MEDIAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
         total = data.sint;
         //debug
@@ -227,7 +224,6 @@ void Testbench::do_median_mean_filter() {
                 mask[2] = 0xff;
                 mask[3] = 0;
                 initiator.write_to_socket(MEDIAN_FILTER_R_ADDR, mask, data.uc, 4);
-                // wait(1 * CLOCK_PERIOD, SC_NS);
             }
 
             // get result from filter
@@ -238,7 +234,6 @@ void Testbench::do_median_mean_filter() {
                 output_num = data.sint;
                 if(output_num>0) done=true;
             }
-            // wait(10 * CLOCK_PERIOD, SC_NS);
             initiator.read_from_socket(MEDIAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
             total = data.sint;
             //debug
@@ -253,7 +248,6 @@ void Testbench::do_median_mean_filter() {
     // Median filter end here
     printf("Median filter done\n");
 
-    // wait(10 * CLOCK_PERIOD, SC_NS);
 
     // copy from target_bitmap to source_bitmap
     for (y = 0; y != height; ++y) {
@@ -264,7 +258,6 @@ void Testbench::do_median_mean_filter() {
         }
     }
 
-    // wait(10 * CLOCK_PERIOD, SC_NS);
 
     // Mean filter start here
     printf("Mean filter start ...\n");
@@ -295,7 +288,6 @@ void Testbench::do_median_mean_filter() {
                     mask[2] = 0xff;
                     mask[3] = 0;
                     initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
-                    // wait(1 * CLOCK_PERIOD, SC_NS);
                 }
             }
         } else {
@@ -319,7 +311,6 @@ void Testbench::do_median_mean_filter() {
                 mask[2] = 0xff;
                 mask[3] = 0;
                 initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
-                // wait(1 * CLOCK_PERIOD, SC_NS);
             }
         }
         // get result from filter
@@ -330,7 +321,6 @@ void Testbench::do_median_mean_filter() {
             output_num = data.sint;
             if(output_num>0) done=true;
         }
-        // wait(10 * CLOCK_PERIOD, SC_NS);
         initiator.read_from_socket(MEAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
         total = data.sint;
         //debug
@@ -362,7 +352,6 @@ void Testbench::do_median_mean_filter() {
                 mask[2] = 0xff;
                 mask[3] = 0;
                 initiator.write_to_socket(MEAN_FILTER_R_ADDR, mask, data.uc, 4);
-                // wait(1 * CLOCK_PERIOD, SC_NS);
             }
 
             // get result from filter
@@ -373,7 +362,6 @@ void Testbench::do_median_mean_filter() {
                 output_num = data.sint;
                 if(output_num>0) done=true;
             }
-            // wait(10 * CLOCK_PERIOD, SC_NS);
             initiator.read_from_socket(MEAN_FILTER_RESULT_ADDR, mask, data.uc, 4);
             total = data.sint;
             //debug
