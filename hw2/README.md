@@ -13,6 +13,6 @@
 - simulation_time.csv: the csv file recording the experimental results.
 
 ## Quick Run
-- Enter the `hw2/filter_with_tlm/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in hw2/filter_with_tlm/output/ folder.
-- Enter the `hw2/filter_with_tlm_qk/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in hw2/filter_with_tlm_qk/output/ folder.
-- Enter the `hw2/filter_with_tlm_qk_bus/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in hw2/filter_with_tlm_qk_bus/output/ folder.
+- Enter the `hw2/filter_with_tlm/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in `hw2/filter_with_tlm/output/` folder.
+- Enter the `hw2/filter_with_tlm_qk/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in `hw2/filter_with_tlm_qk/output/` folder.
+- Enter the `hw2/filter_with_tlm_qk_bus/build/` folder, then run `make run` to see the result of [jetplane.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/blob/main/hw2/noise_images/jetplane_noise.bmp) as out.bmp in `hw2/filter_with_tlm_qk_bus/output/` folder.
