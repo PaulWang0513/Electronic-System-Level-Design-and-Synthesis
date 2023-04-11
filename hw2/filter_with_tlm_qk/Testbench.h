@@ -36,7 +36,7 @@ public:
 
 private:
     tlm_utils::tlm_quantumkeeper m_qk;
-
+    
     unsigned int input_rgb_raw_data_offset;
     const unsigned int output_rgb_raw_data_offset;
     int width;
