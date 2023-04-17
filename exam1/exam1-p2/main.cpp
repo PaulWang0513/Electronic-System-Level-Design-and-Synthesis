@@ -47,5 +47,7 @@ int sc_main(int argc, char **argv) {
     }
     std::cout << "Simulated done" << std::endl;
 
+    std::cout << "Simulated time == " << sc_core::sc_time_stamp() << std::endl;
+
     return 0;
 }
