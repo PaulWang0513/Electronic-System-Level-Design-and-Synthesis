@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -Wall -D CLOCK_PERIOD=1.0 -rdynamic CMakeFiles/decimation.dir/Decimation_filter.cpp.o CMakeFiles/decimation.dir/Testbench.cpp.o CMakeFiles/decimation.dir/main.cpp.o -o decimation  -Wl,-rpath,/opt/systemc/lib /opt/systemc/lib/libsystemc.so.2.3.3 
