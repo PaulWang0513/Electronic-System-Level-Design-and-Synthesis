@@ -10,6 +10,7 @@ using namespace std;
 #include "ready_valid_port.h"
 
 using namespace sc_core;
+using namespace sc_dt;
 
 class Testbench : public sc_module {
 public:
@@ -17,15 +18,7 @@ public:
     sc_out<bool> o_rst;
     rdyvld_port_out<float> o_data;
     rdyvld_port_in<float> i_result;
-
-    sc_uint<float> t_data;
-    sc_uint<1> t_data_rdy;
-    sc_uint<1> t_data_vld;
-
-    sc_uint<float> t_result;
-    sc_uint<1> t_result_rdy;
-    sc_uint<1> t_result_vld;
-
+    
     SC_HAS_PROCESS(Testbench);
 
     Testbench(sc_module_name n);

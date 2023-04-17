@@ -22,23 +22,36 @@ int sc_main(int argc, char **argv) {
     sc_clock clk("clk", CLOCK_PERIOD, SC_NS);
     sc_signal<bool> rst("rst");
 
-    sc_signal<sc_uint<float> > s_i_a_msg;
-    sc_signal<bool> s_i_a_rdy;
-    sc_signal<bool> s_i_a_vld;
-    sc_signal<sc_uint<float> > s_o_sum_msg;
-    sc_signal<bool> s_o_sum_rdy;
-    sc_signal<bool> s_o_sum_vld;
+    sc_signal<float> s_i_data_msg;
+    sc_signal<bool> s_i_data_rdy;
+    sc_signal<bool> s_i_data_vld;
+    sc_signal<float> s_o_result_msg;
+    sc_signal<bool> s_o_result_rdy;
+    sc_signal<bool> s_o_result_vld;
 
     //Connect channels with modules
     tb.i_clk(clk);
     tb.o_rst(rst);
     decimation_filter.i_clk(clk);
     decimation_filter.i_rst(rst);
+    
     tb.o_data(data);
     tb.i_result(result);
     decimation_filter.i_data(data);
     decimation_filter.o_result(result);
 
+    testbench.o_data.msg(s_i_data_msg);
+    testbench.o_data.vld(s_i_data_vld);
+    testbench.o_data.rdy(s_i_data_rdy);
+    testbench.i_result.msg(s_o_result_msg);
+    testbench.i_result.vld(s_o_result_vld);
+    testbench.i_result.rdy(s_o_result_rdy);
+    decimation_filter.i_data.msg(s_i_data_msg);
+    decimation_filter.i_data.vld(s_i_data_vld);
+    decimation_filter.i_data.rdy(s_i_data_rdy);
+    decimation_filter.o_result.msg(s_o_result_msg);
+    decimation_filter.o_result.vld(s_o_result_vld);
+    decimation_filter.o_result.rdy(s_o_result_rdy);
     std::cout << "Simulated start" << std::endl;
     sc_start();
 

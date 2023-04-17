@@ -5,6 +5,7 @@
 #include "datatypes.h"
 #include "ready_valid_port.h"
 using namespace sc_core;
+using namespace sc_dt;
 
 class DecimationFilter : public sc_module {
 public:
