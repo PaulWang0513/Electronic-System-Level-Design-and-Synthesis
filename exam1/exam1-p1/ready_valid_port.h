@@ -1,6 +1,15 @@
 #ifndef _READY_VALID_H_
 #define _READY_VALID_H_
 
+#include <string>
+using namespace std;
+
+#include <systemc>
+#include "ready_valid_port.h"
+
+using namespace sc_core;
+using namespace sc_dt;
+
 //Define a read/valid input signal ports
 //Ports only, need to be connected to actual sc_signals
 //All ports public for explicit access and connection
