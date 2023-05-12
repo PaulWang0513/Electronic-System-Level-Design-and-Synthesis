@@ -48,20 +48,20 @@ define_system_module ../System.cpp
 # SC_MODULEs to be synthesized
 #
 ### 3. Add your design source files here (to be high-level synthesized).
-define_hls_module SobelFilter ../SobelFilter.cpp
+define_hls_module MedianMeanFilter ../MedianMeanFilter.cpp
 
 ### 4. Define your HLS configuration (arbitrary names, BASIC and DPA in this example). 
-define_hls_config SobelFilter BASIC
-define_hls_config SobelFilter DPA       --dpopt_auto=op,expr
+define_hls_config MedianMeanFilter BASIC
+define_hls_config MedianMeanFilter DPA       --dpopt_auto=op,expr
 
-set IMAGE_DIR           ".."
-set IN_FILE_NAME        "${IMAGE_DIR}/lena_std_short.bmp"
+set IMAGE_DIR           "../noise_images"
+set IN_FILE_NAME        "${IMAGE_DIR}/lake_noise.bmp"
 set OUT_FILE_NAME				"out.bmp"
 
 ### 5. Define simulation configuration for each HLS configuration
 ### 5.1 The behavioral simulation (C++ only).
 define_sim_config B -argv "$IN_FILE_NAME $OUT_FILE_NAME"
 ### 5.2 The Verilog simulation for HLS config "BASIC". 
-define_sim_config V_BASIC "SobelFilter RTL_V BASIC" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config V_BASIC "MedianMeanFilter RTL_V BASIC" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
 ### 5.3 The Verilog simulation for HLS config "DPA". 
-define_sim_config V_DPA "SobelFilter RTL_V DPA" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config V_DPA "MedianMeanFilter RTL_V DPA" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
