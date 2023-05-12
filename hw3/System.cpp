@@ -12,10 +12,10 @@ System::System( sc_module_name n, string input_bmp, string output_bmp ): sc_modu
 	median_mean_filter.i_rgb_median(rgb_median);
 	median_mean_filter.o_result_median(result_median);
 
-    // tb.o_rgb_mean(rgb_mean);
-    // tb.i_result_mean(result_mean);
-    // median_mean_filter.i_rgb_mean(rgb_mean);
-    // median_mean_filter.o_result_mean(result_mean);
+    tb.o_rgb_mean(rgb_mean);
+    tb.i_result_mean(result_mean);
+    median_mean_filter.i_rgb_mean(rgb_mean);
+    median_mean_filter.o_result_mean(result_mean);
 
     tb.read_bmp(input_bmp);
 }

@@ -16,8 +16,8 @@ public:
     sc_out<bool> o_rst;
     cynw_p2p<sc_dt::sc_uint<24>>::base_out o_rgb_median;
     cynw_p2p<sc_dt::sc_uint<32>>::base_in i_result_median;
-    // cynw_p2p<sc_dt::sc_uint<24>>::base_out o_rgb_mean;
-    // cynw_p2p<sc_dt::sc_uint<32>>::base_in i_result_mean;
+    cynw_p2p<sc_dt::sc_uint<24>>::base_out o_rgb_mean;
+    cynw_p2p<sc_dt::sc_uint<32>>::base_in i_result_mean;
 
     SC_HAS_PROCESS(Testbench);
 
@@ -58,5 +58,7 @@ private:
 
     void feed_rgb();
 	void fetch_result();
+
+    bool flag_median_done;
 };
 #endif

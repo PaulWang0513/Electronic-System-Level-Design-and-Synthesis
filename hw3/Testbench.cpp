@@ -26,7 +26,7 @@ unsigned char header[54] = {
 };
 
 Testbench::Testbench(sc_module_name n)
-    : sc_module(n), output_rgb_raw_data_offset(54) {
+    : sc_module(n), output_rgb_raw_data_offset(54), flag_median_done(false) {
     SC_THREAD(feed_rgb);
     sensitive << i_clk.pos();
     dont_initialize();
@@ -146,7 +146,7 @@ void Testbench::feed_rgb() {
     yBound = MASK_Y / 2;            // 1
     
     o_rgb_median.reset();
-    // o_rgb_mean.reset();
+    o_rgb_mean.reset();
 
     o_rst.write(false);
     cout << "reset..." << endl;
@@ -230,119 +230,91 @@ void Testbench::feed_rgb() {
         }
     }
 
-    {
-    // // Median filter end here
-    // printf("Median filter done\n");
-
-    // // copy from target_bitmap to source_bitmap
-    // for (y = 0; y != height; ++y) {
-    //     for (x = 0; x != width; ++x) {
-    //         *(source_bitmap + bytes_per_pixel * (width * y + x) + 2) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 2);
-    //         *(source_bitmap + bytes_per_pixel * (width * y + x) + 1) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 1);
-    //         *(source_bitmap + bytes_per_pixel * (width * y + x) + 0) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 0);
-    //     }
-    // }
-
-    // // Mean filter start here
-    // printf("Mean filter start ...\n");
-  
-    // // for each pixel
-    // for (y = 0; y != height; ++y) {
-    //     // first column
-    //     x = 0;
-
-    //     if (y == 0) {
-    //         // send all pixels in the mask to the filter
-    //         for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-    //             for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-    //                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-    //                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-    //                     G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-    //                     B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-    //                 } else {
-    //                     R = 0;
-    //                     G = 0;
-    //                     B = 0;
-    //                 }
-    //                 o_r_mean.write(R);
-    //                 o_g_mean.write(G);
-    //                 o_b_mean.write(B);
-    //                 cnt++;
-    //                 wait(1); //emulate channel delay
-    //             }
-    //         }
-    //     } else {
-    //         // send the bottom most pixels in mask to the filter
-    //         v = 1;
-    //         for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-    //             if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-    //                 R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-    //                 G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-    //                 B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-    //             } else {
-    //                 R = 0;
-    //                 G = 0;
-    //                 B = 0;
-    //             }
-    //             o_r_mean.write(R);
-    //             o_g_mean.write(G);
-    //             o_b_mean.write(B);
-    //             cnt++;
-    //             wait(1); //emulate channel delay
-    //         }
-    //     }
-    //     // get result from filter
-    //     if(i_result_mean.num_available()==0) wait(i_result_mean.data_written_event());
-    //     total = i_result_mean.read();
-
-    //     *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-    //     *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-    //     *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-        
-    //     // for the remaining columns
-    //     for (x = 1; x != width; ++x) {
-    //         // send right most pixels in mask to the filter
-    //         for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-    //             u = 1;
-    //             if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-    //                 R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-    //                 G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-    //                 B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-    //             } else {
-    //                 R = 0;
-    //                 G = 0;
-    //                 B = 0;
-    //             }
-    //             o_r_mean.write(R);
-    //             o_g_mean.write(G);
-    //             o_b_mean.write(B);
-    //             cnt++;
-    //             wait(1); //emulate channel delay
-    //         }
-
-    //         // get result from filter
-    //         if(i_result_mean.num_available()==0) wait(i_result_mean.data_written_event());
-    //         total = i_result_mean.read();
-
-    //         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-    //         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-    //         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-    //     }
-    // }
-
-    // // Mean filter end here
-    // printf("Mean filter done\n");
-
-    // printf("Total pixel transfer: %d\n", cnt);
-    // sc_stop();
+    while (!flag_median_done) {
+        wait();
     }
+
+    cout << "feeding data to mean filter..." << endl;
+    
+    // for each pixel
+    for (y = 0; y != height; ++y) {
+        // first column
+        x = 0;
+
+        if (y == 0) {
+            // send all pixels in the mask to the filter
+            for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+                for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+                    if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+                        R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+                        G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+                        B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+                    } else {
+                        R = 0;
+                        G = 0;
+                        B = 0;
+                    }
+                    sc_dt::sc_uint<24> rgb;
+                    rgb.range(7, 0) = R;
+					rgb.range(15, 8) = G;
+					rgb.range(23, 16) = B;
+                    o_rgb_mean.put(rgb);
+                    cnt++;
+                }
+            }
+        } else {
+            // send the bottom most pixels in mask to the filter
+            v = 1;
+            for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
+                if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+                    R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+                    G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+                    B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+                } else {
+                    R = 0;
+                    G = 0;
+                    B = 0;
+                }
+                sc_dt::sc_uint<24> rgb;
+                rgb.range(7, 0) = R;
+                rgb.range(15, 8) = G;
+                rgb.range(23, 16) = B;
+                o_rgb_mean.put(rgb);
+                cnt++;
+            }
+        }
+        
+        // for the remaining columns
+        for (x = 1; x != width; ++x) {
+            // send right most pixels in mask to the filter
+            for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
+                u = 1;
+                if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
+                    R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
+                    G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
+                    B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
+                } else {
+                    R = 0;
+                    G = 0;
+                    B = 0;
+                }
+                sc_dt::sc_uint<24> rgb;
+                rgb.range(7, 0) = R;
+                rgb.range(15, 8) = G;
+                rgb.range(23, 16) = B;
+                o_rgb_mean.put(rgb);
+                cnt++;
+            }
+        }
+    }
+    cout << "All data have been fed" << endl;
 }
 
 void Testbench::fetch_result() {
     unsigned int x, y; // for loop counter
     int total;
     i_result_median.reset();
-    // i_result_mean.reset();
+    i_result_mean.reset();
 
     wait(5);
     wait(1);
@@ -357,219 +329,28 @@ void Testbench::fetch_result() {
         cout << "[Median] Row " << y << " done" << endl;
     }
 
+    // copy from target_bitmap to source_bitmap
+    for (y = 0; y != height; ++y) {
+        for (x = 0; x != width; ++x) {
+            *(source_bitmap + bytes_per_pixel * (width * y + x) + 2) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 2);
+            *(source_bitmap + bytes_per_pixel * (width * y + x) + 1) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 1);
+            *(source_bitmap + bytes_per_pixel * (width * y + x) + 0) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 0);
+        }
+    }
     cout << "Median filter done" << endl;
+    flag_median_done = true;
 
+    for (y = 0; y != height; ++y) {
+        for (x = 0; x != width; ++x) {
+            total = i_result_mean.get();
+            *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
+            *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
+            *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
+        }
+        cout << "[Mean] Row " << y << " done" << endl;
+    }
+    cout << "Median filter done" << endl;
+    
     total_run_time = sc_time_stamp() - total_start_time;
     sc_stop();
 }
-
-// void Testbench::do_median_mean_filter() {
-//     int cnt = 0;    // count the number of pixel transfer
-//     int x, y, v, u;        // for loop counter
-//     unsigned char R, G, B; // color of R, G, B
-//     int adjustX, adjustY, xBound, yBound;
-//     int total;
-
-//     adjustX = (MASK_X % 2) ? 1 : 0; // 1
-//     adjustY = (MASK_Y % 2) ? 1 : 0; // 1
-//     xBound = MASK_X / 2;            // 1
-//     yBound = MASK_Y / 2;            // 1
-    
-//     o_rst.write(false);
-//     cout << "after reset" << endl;
-//     wait(1);
-//     o_rst.write(true);
-//     wait(1);
-
-//     // Median filter start here
-//     printf("Median filter start ...\n");
-
-//     // for each pixel
-//     for (y = 0; y != height; ++y) {
-//         // first column
-//         x = 0;
-
-//         if (y == 0) {
-//             // send all pixels in the mask to the filter
-//             for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-//                 for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-//                     if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                         R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                         G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                         B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                     } else {
-//                         R = 0;
-//                         G = 0;
-//                         B = 0;
-//                     }
-//                     o_r_median.write(R);
-//                     o_g_median.write(G);
-//                     o_b_median.write(B);
-//                     cnt++;
-//                     wait(1); //emulate channel delay
-//                 }
-//             }
-//         } else {
-//             // send the bottom most pixels in mask to the filter
-//             v = 1;
-//             for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-//                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                     G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                     B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                 } else {
-//                     R = 0;
-//                     G = 0;
-//                     B = 0;
-//                 }
-//                 o_r_median.write(R);
-//                 o_g_median.write(G);
-//                 o_b_median.write(B);
-//                 cnt++;
-//                 wait(1); //emulate channel delay
-//             }
-//         }
-//         // get result from filter
-//         if(i_result_median.num_available()==0) wait(i_result_median.data_written_event());
-//         total = i_result_median.read();
-
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-        
-//         // for the remaining columns
-//         for (x = 1; x != width; ++x) {
-//             // send right most pixels in mask to the filter
-//             for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-//                 u = 1;
-//                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                     G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                     B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                 } else {
-//                     R = 0;
-//                     G = 0;
-//                     B = 0;
-//                 }
-//                 o_r_median.write(R);
-//                 o_g_median.write(G);
-//                 o_b_median.write(B);
-//                 cnt++;
-//                 wait(1); //emulate channel delay
-//             }
-
-//             // get result from filter
-//             if(i_result_median.num_available()==0) wait(i_result_median.data_written_event());
-//             total = i_result_median.read();
-
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-//         }
-//     }
-
-//     // Median filter end here
-//     printf("Median filter done\n");
-
-//     // copy from target_bitmap to source_bitmap
-//     for (y = 0; y != height; ++y) {
-//         for (x = 0; x != width; ++x) {
-//             *(source_bitmap + bytes_per_pixel * (width * y + x) + 2) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 2);
-//             *(source_bitmap + bytes_per_pixel * (width * y + x) + 1) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 1);
-//             *(source_bitmap + bytes_per_pixel * (width * y + x) + 0) = *(target_bitmap + bytes_per_pixel * (width * y + x) + 0);
-//         }
-//     }
-
-//     // Mean filter start here
-//     printf("Mean filter start ...\n");
-  
-//     // for each pixel
-//     for (y = 0; y != height; ++y) {
-//         // first column
-//         x = 0;
-
-//         if (y == 0) {
-//             // send all pixels in the mask to the filter
-//             for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-//                 for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-//                     if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                         R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                         G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                         B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                     } else {
-//                         R = 0;
-//                         G = 0;
-//                         B = 0;
-//                     }
-//                     o_r_mean.write(R);
-//                     o_g_mean.write(G);
-//                     o_b_mean.write(B);
-//                     cnt++;
-//                     wait(1); //emulate channel delay
-//                 }
-//             }
-//         } else {
-//             // send the bottom most pixels in mask to the filter
-//             v = 1;
-//             for (u = -xBound; u != xBound + adjustX; ++u) { //-1, 0, 1
-//                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                     G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                     B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                 } else {
-//                     R = 0;
-//                     G = 0;
-//                     B = 0;
-//                 }
-//                 o_r_mean.write(R);
-//                 o_g_mean.write(G);
-//                 o_b_mean.write(B);
-//                 cnt++;
-//                 wait(1); //emulate channel delay
-//             }
-//         }
-//         // get result from filter
-//         if(i_result_mean.num_available()==0) wait(i_result_mean.data_written_event());
-//         total = i_result_mean.read();
-
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-//         *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-        
-//         // for the remaining columns
-//         for (x = 1; x != width; ++x) {
-//             // send right most pixels in mask to the filter
-//             for (v = -yBound; v != yBound + adjustY; ++v) {   //-1, 0, 1
-//                 u = 1;
-//                 if (x + u >= 0 && x + u < width && y + v >= 0 && y + v < height) {
-//                     R = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 2);
-//                     G = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 1);
-//                     B = *(source_bitmap + bytes_per_pixel * (width * (y + v) + (x + u)) + 0);
-//                 } else {
-//                     R = 0;
-//                     G = 0;
-//                     B = 0;
-//                 }
-//                 o_r_mean.write(R);
-//                 o_g_mean.write(G);
-//                 o_b_mean.write(B);
-//                 cnt++;
-//                 wait(1); //emulate channel delay
-//             }
-
-//             // get result from filter
-//             if(i_result_mean.num_available()==0) wait(i_result_mean.data_written_event());
-//             total = i_result_mean.read();
-
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
-//             *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
-//         }
-//     }
-
-//     // Mean filter end here
-//     printf("Mean filter done\n");
-
-//     printf("Total pixel transfer: %d\n", cnt);
-//     sc_stop();
-// }

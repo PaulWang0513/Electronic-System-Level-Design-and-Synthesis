@@ -12,8 +12,8 @@ public:
     sc_in<bool> i_rst;
     cynw_p2p<sc_dt::sc_uint<24>>::in i_rgb_median;
     cynw_p2p<sc_dt::sc_uint<32>>::out o_result_median;
-    // cynw_p2p<sc_dt::sc_uint<24>>::in i_rgb_mean;
-    // cynw_p2p<sc_dt::sc_uint<32>>::out o_result_mean;
+    cynw_p2p<sc_dt::sc_uint<24>>::in i_rgb_mean;
+    cynw_p2p<sc_dt::sc_uint<32>>::out o_result_mean;
 
     SC_HAS_PROCESS(MedianMeanFilter);
     MedianMeanFilter(sc_module_name n);
@@ -21,9 +21,9 @@ public:
 
 private:
     void do_median_filter();
-    // void do_mean_filter();
+    void do_mean_filter();
     int val_median[MASK_X * MASK_Y];    // to store pixels for median filter to find the median value
-    // int val_mean;                       // to sum up pixels for mean filter to find the mean value
+    int val_mean;                       // to sum up pixels for mean filter to find the mean value
     unsigned char buffer[2][MASK_Y][MASK_X];   // use the first 2D array to buffer the last 511 pixels of a row => xoo
                                                //                                                                  xoo
                                                //                                                                  xoo

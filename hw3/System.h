@@ -20,8 +20,8 @@ private:
 	sc_signal<bool> rst;
 	cynw_p2p< sc_dt::sc_uint<24> > rgb_median;
 	cynw_p2p< sc_dt::sc_uint<32> > result_median;
-	// cynw_p2p< sc_dt::sc_uint<24> > rgb_mean;
-	// cynw_p2p< sc_dt::sc_uint<32> > result_mean;
+	cynw_p2p< sc_dt::sc_uint<24> > rgb_mean;
+	cynw_p2p< sc_dt::sc_uint<32> > result_mean;
 
 	std::string _output_bmp;
 };
