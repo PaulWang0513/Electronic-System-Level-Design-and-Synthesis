@@ -5,6 +5,9 @@ using namespace std;
 
 #include "Testbench.h"
 
+#include <queue>
+static std::queue<sc_time> time_queue;
+
 unsigned char header[54] = {
     0x42,          // identity : B
     0x4d,          // identity : M
@@ -36,9 +39,6 @@ Testbench::Testbench(sc_module_name n)
 }
 
 Testbench::~Testbench() {
-	//cout<< "Max txn time = " << max_txn_time << endl;
-	//cout<< "Min txn time = " << min_txn_time << endl;
-	//cout<< "Avg txn time = " << total_txn_time/n_txn << endl;
 	cout << "Total run time = " << total_run_time << endl;
 }
 
@@ -130,15 +130,11 @@ int Testbench::write_bmp(string outfile_name) {
 }
 
 void Testbench::feed_rgb() {
-    int cnt = 0;    // count the number of pixel transfer
     int x, y, v, u;        // for loop counter
     unsigned char R, G, B; // color of R, G, B
     int adjustX, adjustY, xBound, yBound;
     int total;
-    n_txn = 0;
-	max_txn_time = SC_ZERO_TIME;
-	min_txn_time = SC_ZERO_TIME;
-	total_txn_time = SC_ZERO_TIME;
+    n_pixel = 0;
 
     adjustX = (MASK_X % 2) ? 1 : 0; // 1
     adjustY = (MASK_Y % 2) ? 1 : 0; // 1
@@ -181,7 +177,6 @@ void Testbench::feed_rgb() {
 					rgb.range(15, 8) = G;
 					rgb.range(23, 16) = B;
                     o_rgb_median.put(rgb);
-                    cnt++;
                 }
             }
         } else {
@@ -202,9 +197,10 @@ void Testbench::feed_rgb() {
                 rgb.range(15, 8) = G;
                 rgb.range(23, 16) = B;
                 o_rgb_median.put(rgb);
-                cnt++;
             }
         }
+        time_queue.push(sc_time_stamp());
+        n_pixel++;
         
         // for the remaining columns
         for (x = 1; x != width; ++x) {
@@ -225,8 +221,9 @@ void Testbench::feed_rgb() {
                 rgb.range(15, 8) = G;
                 rgb.range(23, 16) = B;
                 o_rgb_median.put(rgb);
-                cnt++;
             }
+            time_queue.push(sc_time_stamp());
+            n_pixel++;
         }
     }
 
@@ -259,7 +256,6 @@ void Testbench::feed_rgb() {
 					rgb.range(15, 8) = G;
 					rgb.range(23, 16) = B;
                     o_rgb_mean.put(rgb);
-                    cnt++;
                 }
             }
         } else {
@@ -280,9 +276,10 @@ void Testbench::feed_rgb() {
                 rgb.range(15, 8) = G;
                 rgb.range(23, 16) = B;
                 o_rgb_mean.put(rgb);
-                cnt++;
             }
         }
+        time_queue.push(sc_time_stamp());
+        n_pixel++;
         
         // for the remaining columns
         for (x = 1; x != width; ++x) {
@@ -303,8 +300,9 @@ void Testbench::feed_rgb() {
                 rgb.range(15, 8) = G;
                 rgb.range(23, 16) = B;
                 o_rgb_mean.put(rgb);
-                cnt++;
             }
+            time_queue.push(sc_time_stamp());
+            n_pixel++;
         }
     }
     cout << "All data have been fed" << endl;
@@ -319,9 +317,18 @@ void Testbench::fetch_result() {
     wait(5);
     wait(1);
 
+    unsigned long median_latency = 0;
+    unsigned long mean_latency = 0;
+
     for (y = 0; y != height; ++y) {
         for (x = 0; x != width; ++x) {
             total = i_result_median.get();
+
+            sc_time sent_time( time_queue.front() );
+            time_queue.pop();
+            unsigned long latency = clock_cycle( sc_time_stamp() - sent_time );
+            median_latency += latency;
+
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
@@ -343,6 +350,12 @@ void Testbench::fetch_result() {
     for (y = 0; y != height; ++y) {
         for (x = 0; x != width; ++x) {
             total = i_result_mean.get();
+
+            sc_time sent_time( time_queue.front() );
+            time_queue.pop();
+            unsigned long latency = clock_cycle( sc_time_stamp() - sent_time );
+            mean_latency += latency;
+
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 2) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 1) = total;
             *(target_bitmap + bytes_per_pixel * (width * y + x) + 0) = total;
@@ -350,7 +363,24 @@ void Testbench::fetch_result() {
         cout << "[Mean] Row " << y << " done" << endl;
     }
     cout << "Median filter done" << endl;
-    
+
+    // log performance metrics
+    unsigned long average_median_latency = (median_latency / (n_pixel / 2)) + 1;
+    unsigned long average_mean_latency = (mean_latency / (n_pixel / 2)) + 1;
+    unsigned long average_latency = (median_latency + mean_latency) / n_pixel + 1;
+    cout << "Total number of output pixels: " << n_pixel << endl;
+    cout << "Average latency of median filter: " << average_median_latency << " cycles" << endl;
+    cout << "Average latency of mean filter: " << average_mean_latency << " cycles" << endl;
+    cout << "Average latency of the MedianMean filter: " << average_latency << " cycles" << endl;
+
     total_run_time = sc_time_stamp() - total_start_time;
     sc_stop();
+}
+
+// Convert a time in simulation time units to clock cycles
+int Testbench::clock_cycle( sc_time time )
+{
+    sc_clock * clk_p = dynamic_cast < sc_clock * >( i_clk.get_interface() );
+    sc_time clock_period = clk_p->period(); // get period from the sc_clock object.
+    return ( int )( time / clock_period );
 }

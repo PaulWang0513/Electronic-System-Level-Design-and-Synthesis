@@ -38,6 +38,9 @@ public:
     unsigned char *get_source_image() { return source_bitmap; }
     unsigned char *get_target_image() { return target_bitmap; }
 
+    // Utility to convert a time in simulation time units to clock cycles
+    int clock_cycle( sc_time time );
+
 private:
     unsigned int input_rgb_raw_data_offset;
     const unsigned int output_rgb_raw_data_offset;
@@ -49,16 +52,12 @@ private:
     unsigned char *source_bitmap;
     unsigned char *target_bitmap;
 
-    unsigned int n_txn;
-	sc_time max_txn_time;
-	sc_time min_txn_time;
-	sc_time total_txn_time;
+    unsigned int n_pixel;
 	sc_time total_start_time;
 	sc_time total_run_time;
 
     void feed_rgb();
 	void fetch_result();
-
     bool flag_median_done;
 };
 #endif
