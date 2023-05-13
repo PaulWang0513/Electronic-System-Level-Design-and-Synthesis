@@ -54,14 +54,18 @@ define_hls_module MedianMeanFilter ../MedianMeanFilter.cpp
 define_hls_config MedianMeanFilter BASIC
 define_hls_config MedianMeanFilter DPA       --dpopt_auto=op,expr
 
-set IMAGE_DIR           "../noise_images"
+set IMAGE_DIR           "../../noise_images"
 set IN_FILE_NAME        "${IMAGE_DIR}/lake_noise.bmp"
-set OUT_FILE_NAME				"out.bmp"
+set OUT_FILE_NAME				"../output/out.bmp"
 
 ### 5. Define simulation configuration for each HLS configuration
 ### 5.1 The behavioral simulation (C++ only).
 define_sim_config B -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config B_lake -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
+define_sim_config B_jetplane -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
 ### 5.2 The Verilog simulation for HLS config "BASIC". 
 define_sim_config V_BASIC "MedianMeanFilter RTL_V BASIC" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config V_BASIC_lake "MedianMeanFilter RTL_V BASIC" -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
+define_sim_config V_BASIC_jetplane "MedianMeanFilter RTL_V BASIC" -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
 ### 5.3 The Verilog simulation for HLS config "DPA". 
 define_sim_config V_DPA "MedianMeanFilter RTL_V DPA" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
