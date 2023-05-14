@@ -1,0 +1,31 @@
+# hw3
+- This folder contains all files for homework 3
+- [Base_Implementation](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/Base_Implementation): the folder that contains all the files implementing the synthesizable filter module with **base implementation**.
+  - Please checkout the README inside the folder to see how to run the modules.
+- [Improve_coding_styles](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/Improve_coding_styles): the folder that contains all the files implementing the synthesizable filter module with **improved coding styles**.
+  - Please checkout the README inside the folder to see how to run the modules.
+- [Optimized_Implementation](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/Optimized_Implementation): the folder that contains all the files implementing the **optimized** synthesizable filter module.
+  - Please checkout the README inside the folder to see how to run the modules.
+- [noise_images](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images): the folder that contains images with noise.
+- result.csv: the csv file recording the experimental results.
+
+## Quick Run
+- Enter the `hw3/Base_Implementation/stratus/` folder, then run 
+  - `make sim_B_lake` to see the behavior simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Base_Implementation/output/` folder.
+  - `make sim_B_jetplane` to see the behavior simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Base_Implementation/output/` folder.
+  - `make sim_V_BASIC_lake` to see the RTL simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Base_Implementation/output/` folder.
+  - `make sim_V_BASIC_jetplane` to see the RTL simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Base_Implementation/output/` folder.
+- Enter the `hw3/Improve_coding_styles/stratus/` folder, then run
+  - `make sim_B_lake` to see the behavior simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Improve_coding_styles/output/` folder.
+  - `make sim_B_jetplane` to see the behavior simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Improve_coding_styles/output/` folder.
+  - `make sim_V_BASIC_lake` to see the RTL simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Improve_coding_styles/output/` folder.
+  - `make sim_V_BASIC_jetplane` to see the RTL simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Improve_coding_styles/output/` folder.
+- Enter the `hw3/Optimized_Implementation/stratus/` folder, then run
+  - `make sim_B_lake` to see the behavior simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_B_jetplane` to see the behavior simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_lake` to see the RTL simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_jetplane` to see the RTL simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_2_lake` to see the RTL simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_2_jetplane` to see the RTL simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_3_lake` to see the RTL simulation result of [lake_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/lake_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
+  - `make sim_V_OPTIMIZE_3_jetplane` to see the RTL simulation result of [jetplane_noise.bmp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3/noise_images/jetplane_noise.bmp) as out.bmp in `hw3/Optimized_Implementation/output/` folder.
