@@ -55,6 +55,12 @@ define_hls_config MedianMeanFilter BASIC
 define_hls_config MedianMeanFilter OPTIMIZE --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
     map_to_reg_bank [find -array "buffer"]
 }
+define_hls_config MedianMeanFilter OPTIMIZE_2 --clock_period=2.0 --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
+    map_to_reg_bank [find -array "buffer"]
+}
+define_hls_config MedianMeanFilter OPTIMIZE_3 --clock_period=1.0 --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
+    map_to_reg_bank [find -array "buffer"]
+}
 
 set IMAGE_DIR           "../../noise_images"
 set IN_FILE_NAME        "${IMAGE_DIR}/lake_noise.bmp"
@@ -65,11 +71,23 @@ set OUT_FILE_NAME				"../output/out.bmp"
 define_sim_config B -argv "$IN_FILE_NAME $OUT_FILE_NAME"
 define_sim_config B_lake -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
 define_sim_config B_jetplane -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
+
 ### 5.2 The Verilog simulation for HLS config "BASIC". 
 define_sim_config V_BASIC "MedianMeanFilter RTL_V BASIC" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
 define_sim_config V_BASIC_lake "MedianMeanFilter RTL_V BASIC" -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
 define_sim_config V_BASIC_jetplane "MedianMeanFilter RTL_V BASIC" -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
+
 ### 5.3 The Verilog simulation for HLS config "OPTIMIZE". 
 define_sim_config V_OPTIMIZE "MedianMeanFilter RTL_V OPTIMIZE" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
 define_sim_config V_OPTIMIZE_lake "MedianMeanFilter RTL_V OPTIMIZE" -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
 define_sim_config V_OPTIMIZE_jetplane "MedianMeanFilter RTL_V OPTIMIZE" -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
+
+### 5.4 The Verilog simulation for HLS config "OPTIMIZE_2". 
+define_sim_config V_OPTIMIZE_2 "MedianMeanFilter RTL_V OPTIMIZE_2" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config V_OPTIMIZE_2_lake "MedianMeanFilter RTL_V OPTIMIZE_2" -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
+define_sim_config V_OPTIMIZE_2_jetplane "MedianMeanFilter RTL_V OPTIMIZE_2" -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
+
+### 5.5 The Verilog simulation for HLS config "OPTIMIZE_3". 
+define_sim_config V_OPTIMIZE_3 "MedianMeanFilter RTL_V OPTIMIZE_3" -argv "$IN_FILE_NAME $OUT_FILE_NAME"
+define_sim_config V_OPTIMIZE_3_lake "MedianMeanFilter RTL_V OPTIMIZE_3" -argv "${IMAGE_DIR}/lake_noise.bmp $OUT_FILE_NAME"
+define_sim_config V_OPTIMIZE_3_jetplane "MedianMeanFilter RTL_V OPTIMIZE_3" -argv "${IMAGE_DIR}/jetplane_noise.bmp $OUT_FILE_NAME"
