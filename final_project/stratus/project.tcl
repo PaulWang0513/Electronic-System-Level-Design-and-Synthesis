@@ -48,22 +48,22 @@ define_system_module ../source/System.cpp
 # SC_MODULEs to be synthesized
 #
 ### 3. Add your design source files here (to be high-level synthesized).
-define_hls_module AutocorrelationFucntion ../AutocorrelationFucntion.cpp
+define_hls_module AutocorrelationFunction ../source/AutocorrelationFunction.cpp
 
 ### 4. Define your HLS configuration 
-define_hls_config AutocorrelationFucntion BASIC
-define_hls_config AutocorrelationFucntion OPTIMIZE --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
+define_hls_config AutocorrelationFunction BASIC
+define_hls_config AutocorrelationFunction OPTIMIZE --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
     map_to_reg_bank [find -array "buffer"]
 }
 
 set TEST_FILE           "sin_wave"
 set DATA_DIR            "../data"
 set INPUT_FILE_NAME     "${DATA_DIR}/${TEST_FILE}.dat"
-set GOLDEN_FILE_NAME	"${DATA_DIR}/${TEST_FILE}_output.dat"
+set GOLDEN_FILE_NAME	"${DATA_DIR}/${TEST_FILE}_golden.dat"
 
 ### 5. Define simulation configuration for each HLS configuration
 ### 5.1 The behavioral simulation (C++ only).
 define_sim_config B -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 
 ### 5.2 The Verilog simulation for HLS config "BASIC". 
-define_sim_config V_BASIC "AutocorrelationFucntion RTL_V BASIC" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
+define_sim_config V_BASIC "AutocorrelationFunction RTL_V BASIC" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
