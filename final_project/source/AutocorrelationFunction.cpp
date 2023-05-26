@@ -28,25 +28,32 @@ void AutocorrelationFunction::do_ACF() {
         mem[i] = 0;
     }
 
-    unsigned int idx = 0;
-    // main loop, currently just add 1 to each input data
+    // main loop
     while (true) {
-        // read input
-        sc_dt::sc_uint<8> input_data;
-        {
-            HLS_DEFINE_PROTOCOL("input");
-            input_data = i_data.get();
-            wait();
+        // read input of size SIGNAL_LEN
+        for (unsigned int i=0; i<SIGNAL_LEN; i++) {
+            {
+                HLS_DEFINE_PROTOCOL("input");
+                mem[i] = i_data.get();
+                wait();
+            }
         }
-        mem[idx] = input_data + 1;
-    
-        // output result
-        sc_dt::sc_uint<26> output_data = mem[idx];
-        {
-			HLS_DEFINE_PROTOCOL("output");
-            o_result.put(output_data);
-			wait();
-		}
-        idx++;
+        
+        // calculate ACF
+        for (unsigned int lag=0; lag<SIGNAL_LEN; lag++) {
+            sc_dt::sc_uint<26> sum = 0;
+            for (unsigned int i=0; i<SIGNAL_LEN-lag; i++) {
+                sum += mem[i] * mem[i+lag];
+            }
+            sum /= SIGNAL_LEN;
+            {
+                HLS_DEFINE_PROTOCOL("output");
+                o_result.put(sum);
+                wait();
+            }
+        }
     }
 }
+
+// area: 4477.2
+// total run time: 15074990
