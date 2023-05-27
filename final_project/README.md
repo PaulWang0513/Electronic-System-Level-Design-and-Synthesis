@@ -1,6 +1,6 @@
 # Final Project
 
-| Implemantation | Description | Area | Avg. Latency (clocks) | Total Runtime (ns) |
+| Implemantation | Description | Area | Avg. Latency (cycles) | Total Runtime (ns) |
 | -------------- | ----------- | ---- | --------------------- | ------------------ |
 | BASIC          | 1000 signals in RAM_1000X8 | 4443.6 | 1503 | 15064990 |
 
