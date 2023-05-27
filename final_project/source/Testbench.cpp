@@ -7,8 +7,8 @@ using namespace std;
 
 #include "Testbench.h"
 
-// #include <queue>
-// static std::queue<sc_time> time_queue;
+#include <queue>
+static std::queue<sc_time> time_queue;
 
 Testbench::Testbench(sc_module_name n)
     : sc_module(n) {
@@ -21,6 +21,9 @@ Testbench::Testbench(sc_module_name n)
 }
 
 Testbench::~Testbench() {
+    while (!time_queue.empty()) {
+        time_queue.pop();
+    }
     cout << "===============================================" << endl;
     cout << "=============== Simulation Done ===============" << endl;
     cout << "===============================================" << endl;
@@ -45,6 +48,9 @@ void Testbench::feed_data() {
     for (int i=0; i<SIGNAL_LEN; i++) {
         o_data.put(input_data[i]);
     }
+
+    cout << "feeding data done" << endl;
+    time_queue.push(sc_time_stamp());
 }
 
 void Testbench::fetch_result() {
@@ -53,9 +59,17 @@ void Testbench::fetch_result() {
     wait(5);
     wait(1);
 
+    unsigned int latency_sum = 0;
+
     for (int i=0; i<SIGNAL_LEN; i++) {
         result_data[i] = i_result.get();
-        cout << "result_data[" << i << "] = " << result_data[i] << endl;
+
+        sc_time sent_time( time_queue.front() );
+        time_queue.pop();
+        unsigned long latency = clock_cycle( sc_time_stamp() - sent_time );
+        latency_sum += latency;
+        cout << "result[" << i << "] = " << result_data[i] << "\t latency = " << latency << endl;
+        time_queue.push(sc_time_stamp());
     }
 
     total_run_time = sc_time_stamp() - total_start_time;
@@ -106,9 +120,9 @@ void Testbench::validate()
         }
     }
     if (error == 0)
-        cout << "Validation passed!" << endl;
+        cout << "Validation [PASS]" << endl;
     else
-        cout << "Validation failed! " << error << " errors found!" << endl;
+        cout << "Validation [FAIL] " << error << " errors found!" << endl;
 }
 
 // Convert a time in simulation time units to clock cycles

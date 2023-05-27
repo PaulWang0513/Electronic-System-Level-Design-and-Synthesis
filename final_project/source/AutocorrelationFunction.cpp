@@ -42,8 +42,10 @@ void AutocorrelationFunction::do_ACF() {
         // calculate ACF
         for (unsigned int lag=0; lag<SIGNAL_LEN; lag++) {
             sc_dt::sc_uint<26> sum = 0;
-            for (unsigned int i=0; i<SIGNAL_LEN-lag; i++) {
-                sum += mem[i] * mem[i+lag];
+            for (unsigned int idx=0; idx<SIGNAL_LEN-lag; idx++) {
+                unsigned int original_signal = mem[idx];
+                unsigned int lagged_signal = (idx+lag < SIGNAL_LEN) ? mem[idx+lag] : 0;
+                sum += original_signal * lagged_signal;
             }
             sum /= SIGNAL_LEN;
             {
@@ -55,5 +57,5 @@ void AutocorrelationFunction::do_ACF() {
     }
 }
 
-// area: 4477.2
+// area: 3192.9
 // total run time: 15074990
