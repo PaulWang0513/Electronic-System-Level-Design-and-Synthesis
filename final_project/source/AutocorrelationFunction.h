@@ -6,6 +6,10 @@
 #include "def.h"
 using namespace sc_core;
 
+// change this to select the implementation to do simulation or synthesis
+// avaliable options: BASIC, MEM_1000X2, MEM_500X2
+#define MEM_500X2
+
 class AutocorrelationFunction : public sc_module {
 public:
     sc_in_clk i_clk;
@@ -19,6 +23,15 @@ public:
 
 private:
     void do_ACF();
+#if defined(MEM_1000X2)
+    unsigned char mem0[SIGNAL_LEN];
+    unsigned char mem1[SIGNAL_LEN];
+#elif defined(MEM_500X2)
+    unsigned char mem0[500];
+    unsigned char mem1[500];
+#else
     unsigned char mem[SIGNAL_LEN];
+#endif
+
 };
 #endif

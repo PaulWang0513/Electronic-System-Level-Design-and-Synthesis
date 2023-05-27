@@ -3,7 +3,7 @@ catch {setToolVersion "21.20-p100"}
 setModelStyle 1
 setWordSize 8
 setNumWords 500
-setArea 1000
+setArea 500
 setLatency 1
 setDelay 0
 setSetup 0

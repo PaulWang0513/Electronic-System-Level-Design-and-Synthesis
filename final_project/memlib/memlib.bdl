@@ -103,7 +103,7 @@
 		<source_path>c_parts/RAM_500X8.cc</source_path>
 		<crc>0</crc>
 		<resource_kind>RAM</resource_kind>
-		<area>1000</area>
+		<area>500</area>
 		<delay>0</delay>
 		<setup_time>0</setup_time>
 		<slack>0</slack>
