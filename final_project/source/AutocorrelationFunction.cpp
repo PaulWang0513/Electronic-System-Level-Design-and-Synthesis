@@ -174,7 +174,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<SIGNAL_LEN; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 1);
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
                 unsigned int original_signal = mem0[idx];
                 unsigned int lagged_signal = (idx+lag < SIGNAL_LEN) ? mem1[idx+lag] : 0;
                 sum += original_signal * lagged_signal;
@@ -191,15 +191,15 @@ void AutocorrelationFunction::do_ACF() {
         for (unsigned int lag=0; lag<500; lag++) {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<500; idx++) {
-                HLS_PIPELINE_LOOP(SOFT_STALL, 3);
-                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
+                HLS_PIPELINE_LOOP(SOFT_STALL, 2);
+                HLS_CONSTRAIN_LATENCY(0, 4, "lat04");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
-                unsigned int lagged_signal_0;
-                unsigned int lagged_signal_1;
+                unsigned int lagged_signal_0, lagged_signal_1;
                 if (idx+lag < 500) {
-                    lagged_signal_0 = mem0[idx+lag];
-                    lagged_signal_1 = mem1[idx+lag];
+                    unsigned temp = idx+lag;
+                    lagged_signal_0 = mem0[temp];
+                    lagged_signal_1 = mem1[temp];
                 } else {
                     lagged_signal_0 = mem1[idx+lag-500];
                     lagged_signal_1 = 0;
@@ -220,7 +220,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<500; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 1);
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int lagged_signal_1 = (idx+lag < 500) ? mem1[idx+lag] : 0;
                 sum += original_signal_0 * lagged_signal_1;
@@ -238,7 +238,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 2);
-                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
+                HLS_CONSTRAIN_LATENCY(0, 4, "lat04");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
                 unsigned int original_signal_2 = mem2[idx];
@@ -275,7 +275,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 2);
-                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
+                HLS_CONSTRAIN_LATENCY(0, 4, "lat04");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
                 unsigned int original_signal_2 = mem2[idx];
@@ -308,7 +308,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 1);
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
                 unsigned int lagged_signal_2, lagged_signal_3;
@@ -337,7 +337,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 1);
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int lagged_signal_3 = (idx+lag < 250) ? mem3[idx+lag] : 0;
                 sum += original_signal_0 * lagged_signal_3;
@@ -355,7 +355,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 2);
-                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
+                HLS_CONSTRAIN_LATENCY(0, 4, "lat04");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
                 unsigned int original_signal_2 = mem2[idx];
@@ -398,7 +398,7 @@ void AutocorrelationFunction::do_ACF() {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
                 HLS_PIPELINE_LOOP(SOFT_STALL, 1);
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_CONSTRAIN_LATENCY(0, 3, "lat03");
                 unsigned int original_signal_0 = mem0[idx];
                 unsigned int original_signal_1 = mem1[idx];
                 unsigned int lagged_signal_2, lagged_signal_3;
@@ -429,7 +429,8 @@ void AutocorrelationFunction::do_ACF() {
         for (unsigned int lag=0; lag<SIGNAL_LEN; lag++) {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<SIGNAL_LEN; idx++) {
-                HLS_CONSTRAIN_LATENCY(0, 2, "lat02");
+                HLS_PIPELINE_LOOP(SOFT_STALL, 2);
+                HLS_CONSTRAIN_LATENCY(0, 4, "lat04");
                 unsigned int original_signal = mem[idx];
                 unsigned int lagged_signal = (idx+lag < SIGNAL_LEN) ? mem[idx+lag] : 0;
                 sum += original_signal * lagged_signal;
