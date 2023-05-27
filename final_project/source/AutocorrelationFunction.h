@@ -7,8 +7,8 @@
 using namespace sc_core;
 
 // change this to select the implementation to do simulation or synthesis
-// avaliable options: BASIC, MEM_1000X2, MEM_500X2, MEM_250X4
-#define MEM_250X4
+// avaliable options: BASIC, MEM_1000X2, MEM_500X2, MEM_250X4, MEM_250X4_AREA
+#define MEM_250X4_AREA
 
 class AutocorrelationFunction : public sc_module {
 public:
@@ -30,6 +30,11 @@ private:
     unsigned char mem0[500];
     unsigned char mem1[500];
 #elif defined(MEM_250X4)
+    unsigned char mem0[250];
+    unsigned char mem1[250];
+    unsigned char mem2[250];
+    unsigned char mem3[250];
+#elif defined(MEM_250X4_AREA)
     unsigned char mem0[250];
     unsigned char mem1[250];
     unsigned char mem2[250];
