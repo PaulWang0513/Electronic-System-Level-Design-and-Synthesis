@@ -34,6 +34,8 @@ private:
 
 	sc_time total_start_time;
 	sc_time total_run_time;
+    unsigned int latency_sum;
+    
     void feed_data();
 	void fetch_result();
 };

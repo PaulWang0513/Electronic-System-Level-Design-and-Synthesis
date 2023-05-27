@@ -11,7 +11,7 @@ using namespace std;
 static std::queue<sc_time> time_queue;
 
 Testbench::Testbench(sc_module_name n)
-    : sc_module(n) {
+    : sc_module(n), latency_sum(0) {
     SC_THREAD(feed_data);
     sensitive << i_clk.pos();
     dont_initialize();
@@ -29,6 +29,7 @@ Testbench::~Testbench() {
     cout << "===============================================" << endl;
     validate();
 	cout << "Total run time = " << total_run_time << endl;
+    cout << "Average latency = " << latency_sum / SIGNAL_LEN << endl;
 }
 
 void Testbench::feed_data() {
@@ -58,8 +59,6 @@ void Testbench::fetch_result() {
 
     wait(5);
     wait(1);
-
-    unsigned int latency_sum = 0;
 
     for (int i=0; i<SIGNAL_LEN; i++) {
         result_data[i] = i_result.get();

@@ -56,6 +56,3 @@ void AutocorrelationFunction::do_ACF() {
         }
     }
 }
-
-// area: 3192.9
-// total run time: 15074990

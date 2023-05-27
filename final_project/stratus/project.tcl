@@ -1,3 +1,4 @@
+use_hls_lib "../memlib"
 #*******************************************************************************
 # Copyright 2015 Cadence Design Systems, Inc.
 # All Rights Reserved.
@@ -51,7 +52,9 @@ define_system_module ../source/System.cpp
 define_hls_module AutocorrelationFunction ../source/AutocorrelationFunction.cpp
 
 ### 4. Define your HLS configuration 
-define_hls_config AutocorrelationFunction BASIC
+define_hls_config AutocorrelationFunction BASIC --dpopt_auto=op,expr --post_elab_tcl {
+    map_to_memory -mem_type "RAM_1000X8" [find -array "mem"]
+}
 define_hls_config AutocorrelationFunction OPTIMIZE --flatten_arrays=all --unroll_loops=on --dpopt_auto=all -post_elab_tcl {
     map_to_reg_bank [find -array "buffer"]
 }
