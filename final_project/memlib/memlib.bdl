@@ -46,6 +46,21 @@
 		<file_kind>MEM_WRAP</file_kind>
 		<module_name>RAM_500X8</module_name>
 	</source_file>
+	<source_file>
+		<path>c_parts/RAM_250X8.cc</path>
+		<file_kind>RTL_C</file_kind>
+		<module_name>RAM_250X8</module_name>
+	</source_file>
+	<source_file>
+		<path>c_parts/RAM_250X8.h</path>
+		<file_kind>RTL_H</file_kind>
+		<module_name>RAM_250X8</module_name>
+	</source_file>
+	<source_file>
+		<path>RAM_250X8.bdm</path>
+		<file_kind>MEM_WRAP</file_kind>
+		<module_name>RAM_250X8</module_name>
+	</source_file>
 	<module>
 		<name>RAM_1000X8</name>
 		<source_path>c_parts/RAM_1000X8.cc</source_path>
@@ -93,6 +108,58 @@
 		<port>
 			<name>A0</name>
 			<datatype W="10">sc_uint</datatype>
+			<direction>in</direction>
+			<port_kind>addr</port_kind>
+			<access_port>0</access_port>
+		</port>
+	</module>
+	<module>
+		<name>RAM_250X8</name>
+		<source_path>c_parts/RAM_250X8.cc</source_path>
+		<crc>0</crc>
+		<resource_kind>RAM</resource_kind>
+		<area>250</area>
+		<delay>0</delay>
+		<setup_time>0</setup_time>
+		<slack>0</slack>
+		<latency>1</latency>
+		<pipelined>1</pipelined>
+		<init_interval>1</init_interval>
+		<stallable>0</stallable>
+		<word_count>250</word_count>
+		<port>
+			<name>CLK</name>
+			<datatype W="1">bool</datatype>
+			<direction>in</direction>
+			<clock/>
+			<port_kind>clock</port_kind>
+			<access_port>0</access_port>
+		</port>
+		<port>
+			<name>WE0</name>
+			<datatype W="1">bool</datatype>
+			<direction>in</direction>
+			<inactive_value>1</inactive_value>
+			<port_kind>we</port_kind>
+			<access_port>0</access_port>
+		</port>
+		<port>
+			<name>DIN0</name>
+			<datatype W="8">sc_uint</datatype>
+			<direction>in</direction>
+			<port_kind>data</port_kind>
+			<access_port>0</access_port>
+		</port>
+		<port>
+			<name>DOUT0</name>
+			<datatype W="8">sc_uint</datatype>
+			<direction>out</direction>
+			<port_kind>data</port_kind>
+			<access_port>0</access_port>
+		</port>
+		<port>
+			<name>A0</name>
+			<datatype W="8">sc_uint</datatype>
 			<direction>in</direction>
 			<port_kind>addr</port_kind>
 			<access_port>0</access_port>

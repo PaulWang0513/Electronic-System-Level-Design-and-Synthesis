@@ -63,6 +63,12 @@ define_hls_config AutocorrelationFunction MEM_500X2 --dpopt_auto=op,expr --post_
     map_to_memory -mem_type "RAM_500X8" [find -array "mem0"]
     map_to_memory -mem_type "RAM_500X8" [find -array "mem1"]
 }
+define_hls_config AutocorrelationFunction MEM_250X4 --dpopt_auto=op,expr --post_elab_tcl {
+    map_to_memory -mem_type "RAM_250X8" [find -array "mem0"]
+    map_to_memory -mem_type "RAM_250X8" [find -array "mem1"]
+    map_to_memory -mem_type "RAM_250X8" [find -array "mem2"]
+    map_to_memory -mem_type "RAM_250X8" [find -array "mem3"]
+}
 
 set TEST_FILE           "sin_wave"
 set DATA_DIR            "../data"
@@ -74,8 +80,10 @@ set GOLDEN_FILE_NAME	"${DATA_DIR}/${TEST_FILE}_golden.dat"
 define_sim_config BASIC_B -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 define_sim_config MEM_1000X2_B -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 define_sim_config MEM_500X2_B -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
+define_sim_config MEM_250X4_B -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 
 ### 5.2 The Verilog simulation (RTL).
 define_sim_config BASIC_V "AutocorrelationFunction RTL_V BASIC" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 define_sim_config MEM_1000X2_V "AutocorrelationFunction RTL_V MEM_1000X2" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
 define_sim_config MEM_500X2_V "AutocorrelationFunction RTL_V MEM_500X2" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
+define_sim_config MEM_250X4_V "AutocorrelationFunction RTL_V MEM_250X4" -argv "$INPUT_FILE_NAME $GOLDEN_FILE_NAME"
