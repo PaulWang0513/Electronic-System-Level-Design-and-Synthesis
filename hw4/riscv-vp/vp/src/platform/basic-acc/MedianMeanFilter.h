@@ -13,10 +13,14 @@ using namespace sc_core;
 struct MedianMeanFilter : public sc_module {
   tlm_utils::simple_target_socket<MedianMeanFilter> tsock;
 
-  sc_fifo<unsigned char> i_r;
-  sc_fifo<unsigned char> i_g;
-  sc_fifo<unsigned char> i_b;
-  sc_fifo<int> o_result;
+  sc_fifo<unsigned char> i_r_median;
+  sc_fifo<unsigned char> i_g_median;
+  sc_fifo<unsigned char> i_b_median;
+  sc_fifo<int> o_result_median;
+  sc_fifo<unsigned char> i_r_mean;
+  sc_fifo<unsigned char> i_g_mean;
+  sc_fifo<unsigned char> i_b_mean;
+  sc_fifo<int> o_result_mean;
 
   SC_HAS_PROCESS(MedianMeanFilter);
 
@@ -27,12 +31,14 @@ struct MedianMeanFilter : public sc_module {
   {
     tsock.register_b_transport(this, &MedianMeanFilter::blocking_transport);
     SC_THREAD(do_median_filter);
+    SC_THREAD(do_mean_filter);
   }
 
   ~MedianMeanFilter() {
 	}
 
   int val[MASK_Y * MASK_X];
+  int val_mean;
   unsigned int base_offset;
 
   void do_median_filter(){
@@ -44,19 +50,13 @@ struct MedianMeanFilter : public sc_module {
       }
       for (unsigned int v = 0; v < MASK_Y; ++v) {
         for (unsigned int u = 0; u < MASK_X; ++u) {
-          unsigned char grey = (i_r.read() + i_g.read() + i_b.read()) / 3;
+          unsigned char grey = (i_r_median.read() + i_g_median.read() + i_b_median.read()) / 3;
           wait(CLOCK_PERIOD, SC_NS);
           val[v*3+u] = grey;
           wait(CLOCK_PERIOD, SC_NS);
         }
       }
-      // double total = 0;
-      // for (unsigned int i = 0; i != MASK_N; ++i) {
-      //   total += val[i] * val[i];
-      //   wait(CLOCK_PERIOD, SC_NS);
-      // }
-      // int result = static_cast<int>(std::sqrt(total));
-
+      
       // sort val
       for (unsigned int i = 0; i < MASK_Y*MASK_X; ++i) {
         for (unsigned int j = i + 1; j < MASK_Y*MASK_X; ++j) {
@@ -69,9 +69,32 @@ struct MedianMeanFilter : public sc_module {
         }
       }
 
-      // cout << (int)result << endl;
+      o_result_median.write(val[4]);
+    }
+  }
 
-      o_result.write(val[4]);
+  const int mask[MASK_X][MASK_Y] = {{1, 1, 1}, {1, 2, 1}, {1, 1, 1}};
+
+  void do_mean_filter(){
+    { wait(CLOCK_PERIOD, SC_NS); }
+    while (true) {
+      val_mean = 0;
+      wait(CLOCK_PERIOD, SC_NS);
+
+      for (unsigned int v = 0; v < MASK_Y; ++v) {
+        for (unsigned int u = 0; u < MASK_X; ++u) {
+          unsigned char grey = (i_r_mean.read() + i_g_mean.read() + i_b_mean.read()) / 3;
+          wait(CLOCK_PERIOD, SC_NS);
+          val_mean += grey * mask[v][u];
+          wait(CLOCK_PERIOD, SC_NS);
+        }
+      }
+      
+      // compute mean
+      int result = val_mean / 10;
+      wait(CLOCK_PERIOD, SC_NS);
+
+      o_result_mean.write(result);
     }
   }
 
@@ -85,7 +108,6 @@ struct MedianMeanFilter : public sc_module {
 
     addr -= base_offset;
 
-
     // cout << (int)data_ptr[0] << endl;
     // cout << (int)data_ptr[1] << endl;
     // cout << (int)data_ptr[2] << endl;
@@ -96,7 +118,10 @@ struct MedianMeanFilter : public sc_module {
         // cout << "READ" << endl;
         switch (addr) {
           case MEDIAN_FILTER_RESULT_ADDR:
-            buffer.uint = o_result.read();
+            buffer.uint = o_result_median.read();
+            break;
+          case MEAN_FILTER_RESULT_ADDR:
+            buffer.uint = o_result_mean.read();
             break;
           default:
             std::cerr << "READ Error! MedianMeanFilter::blocking_transport: address 0x"
@@ -112,9 +137,14 @@ struct MedianMeanFilter : public sc_module {
         // cout << "WRITE" << endl;
         switch (addr) {
           case MEDIAN_FILTER_R_ADDR:
-            i_r.write(data_ptr[0]);
-            i_g.write(data_ptr[1]);
-            i_b.write(data_ptr[2]);
+            i_r_median.write(data_ptr[0]);
+            i_g_median.write(data_ptr[1]);
+            i_b_median.write(data_ptr[2]);
+            break;
+          case MEAN_FILTER_R_ADDR:
+            i_r_mean.write(data_ptr[0]);
+            i_g_mean.write(data_ptr[1]);
+            i_b_mean.write(data_ptr[2]);
             break;
           default:
             std::cerr << "WRITE Error! MedianMeanFilter::blocking_transport: address 0x"

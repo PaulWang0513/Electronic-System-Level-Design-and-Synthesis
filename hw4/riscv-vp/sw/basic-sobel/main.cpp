@@ -40,13 +40,15 @@ unsigned char bits_per_pixel;
 unsigned short bytes_per_pixel;
 unsigned char *source_bitmap;
 unsigned char *target_bitmap;
-const int WHITE = 255;
-const int BLACK = 0;
-const int THRESHOLD = 90;
+// const int WHITE = 255;
+// const int BLACK = 0;
+// const int THRESHOLD = 90;
 
 // MedianMean Filter ACC
 static char* const MEDIANFILTER_START_ADDR = reinterpret_cast<char* const>(0x73000000);
 static char* const MEDIANFILTER_READ_ADDR  = reinterpret_cast<char* const>(0x73000004);
+static char* const MEANFILTER_START_ADDR   = reinterpret_cast<char* const>(0x73000008);
+static char* const MEANFILTER_READ_ADDR    = reinterpret_cast<char* const>(0x7300000C);
 
 // DMA 
 static volatile uint32_t * const DMA_SRC_ADDR  = (uint32_t * const)0x70000000;
@@ -174,7 +176,7 @@ int main(int argc, char *argv[]) {
   // lena_std_short
   // lake_noise
   // jetplane_noise
-  std::string test_image = "lake_noise";
+  std::string test_image = "jetplane_noise";
   read_bmp("./images/" + test_image + ".bmp");
 
   printf("======================================\n");
@@ -191,7 +193,7 @@ int main(int argc, char *argv[]) {
   int total;
   printf("Start processing...(%d, %d)\n", width, height);
   for(int i = 0; i < height; i++){
-    printf("height: %d\n", i);
+    printf("median, height: %d\n", i);
     for(int j = 0; j < width; j++){
       for(int v = -1; v <= 1; v ++){
         for(int u = -1; u <= 1; u++){
@@ -213,18 +215,48 @@ int main(int argc, char *argv[]) {
 
       memcpy(data.uc, buffer, 4);
       total = (data).sint;
-      if (total - THRESHOLD >= 0) {
-        // black
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 2) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 1) = BLACK;
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 0) = BLACK;
-      } else {
-        // white
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 2) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 1) = WHITE;
-        *(target_bitmap + bytes_per_pixel * (height * i + j) + 0) = WHITE;
-      }
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 2) = total;
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 1) = total;
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 0) = total;
     }
   }
+
+  for(int i=0; i<height; i++) {
+    for(int j=0; j<width; j++) {
+      *(source_bitmap + bytes_per_pixel * (height * i + j) + 2) = *(target_bitmap + bytes_per_pixel * (height * i + j) + 2);
+      *(source_bitmap + bytes_per_pixel * (height * i + j) + 1) = *(target_bitmap + bytes_per_pixel * (height * i + j) + 1);
+      *(source_bitmap + bytes_per_pixel * (height * i + j) + 0) = *(target_bitmap + bytes_per_pixel * (height * i + j) + 0);
+    }
+  }
+
+  for(int i = 0; i < height; i++){
+    printf("mean, height: %d\n", i);
+    for(int j = 0; j < width; j++){
+      for(int v = -1; v <= 1; v ++){
+        for(int u = -1; u <= 1; u++){
+          if((v + i) >= 0  &&  (v + i ) < height && (u + j) >= 0 && (u + j) < width ){
+            buffer[0] = *(source_bitmap + bytes_per_pixel * ((i + v) * height + (j + u)) + 2);
+            buffer[1] = *(source_bitmap + bytes_per_pixel * ((i + v) * height + (j + u)) + 1);
+            buffer[2] = *(source_bitmap + bytes_per_pixel * ((i + v) * height + (j + u)) + 0);
+            buffer[3] = 0;
+          }else{
+            buffer[0] = 0;
+            buffer[1] = 0;
+            buffer[2] = 0;
+            buffer[3] = 0;
+          }
+          write_data_to_ACC(MEANFILTER_START_ADDR, buffer, 4);
+        }
+      }
+      read_data_from_ACC(MEANFILTER_READ_ADDR, buffer, 4);
+
+      memcpy(data.uc, buffer, 4);
+      total = (data).sint;
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 2) = total;
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 1) = total;
+      *(target_bitmap + bytes_per_pixel * (height * i + j) + 0) = total;
+    }
+  }
+
   write_bmp("./images/" + test_image + "_out.bmp");
 }
