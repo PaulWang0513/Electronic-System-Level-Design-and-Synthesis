@@ -6,3 +6,5 @@
   - Please checkout the README inside the folder to see more information.
 - [hw3 folder](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw3) contains all the files for homework 3 (Median and Mean Filter with Stratus HLS).
   - Please checkout the README inside the folder to see more information.
+- [hw4 folder](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/hw4) contains all the files for homework 4 (Median and Mean Filter with Stratus HLS).
+  - Please checkout the README inside the folder to see more information.
