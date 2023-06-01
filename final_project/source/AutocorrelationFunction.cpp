@@ -393,7 +393,7 @@ void AutocorrelationFunction::do_ACF() {
                 wait();
             }
         }
-        // result 500 ~ 749
+        // result 500 ~ 999
         for (unsigned int lag=0; lag<500; lag++) {
             sc_dt::sc_uint<26> sum = 0;
             for (unsigned int idx=0; idx<250; idx++) {
