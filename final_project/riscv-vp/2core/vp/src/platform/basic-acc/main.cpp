@@ -63,15 +63,25 @@ public:
 	addr_t mram_start_addr = 0x60000000;
 	addr_t mram_size = 0x10000000;
 	addr_t mram_end_addr = mram_start_addr + mram_size - 1;
-	addr_t dma_start_addr = 0x70000000;
-	addr_t dma_end_addr = 0x70001000;
+	// addr_t dma_start_addr = 0x70000000;
+	// addr_t dma_end_addr = 0x70001000;
+	addr_t dma0_start_addr = 0x70000000;
+	addr_t dma0_end_addr = 0x70001000;
+	addr_t dma1_start_addr = 0x70002000;
+	addr_t dma1_end_addr = 0x70003000;
 	addr_t flash_start_addr = 0x71000000;
 	addr_t flash_end_addr = flash_start_addr + Flashcontroller::ADDR_SPACE;  // Usually 528 Byte
 	addr_t display_start_addr = 0x72000000;
 	addr_t display_end_addr = display_start_addr + Display::addressRange;
-	addr_t autocorrelation_function_start_addr = 0x73000000;
- 	addr_t autocorrelation_function_size = 0x01000000;
- 	addr_t autocorrelation_function_end_addr = autocorrelation_function_start_addr + autocorrelation_function_size - 1;
+	// addr_t autocorrelation_function_start_addr = 0x73000000;
+ 	// addr_t autocorrelation_function_size = 0x01000000;
+ 	// addr_t autocorrelation_function_end_addr = autocorrelation_function_start_addr + autocorrelation_function_size - 1;
+	addr_t autocorrelation_function0_start_addr = 0x73000000;
+ 	addr_t autocorrelation_function0_size = 0x01000000;
+ 	addr_t autocorrelation_function0_end_addr = autocorrelation_function0_start_addr + autocorrelation_function0_size - 1;
+	addr_t autocorrelation_function1_start_addr = 0x74000000;
+ 	addr_t autocorrelation_function1_size = 0x01000000;
+ 	addr_t autocorrelation_function1_end_addr = autocorrelation_function1_start_addr + autocorrelation_function1_size - 1;
 
 	bool use_E_base_isa = false;
 
@@ -97,10 +107,10 @@ public:
 
 		entry_point.finalize(parse_ulong_option);
 		mem_end_addr = mem_start_addr + mem_size - 1;
-		assert((mem_end_addr < clint_start_addr || mem_start_addr > autocorrelation_function_end_addr) &&
+		assert((mem_end_addr < clint_start_addr || mem_start_addr > autocorrelation_function1_end_addr) &&
 		       "RAM too big, would overlap memory");
 		mram_end_addr = mram_start_addr + mram_size - 1;
-		assert(mram_end_addr < dma_start_addr && "MRAM too big, would overlap memory");
+		assert(mram_end_addr < dma0_start_addr && "MRAM too big, would overlap memory");
 	}
 };
 
@@ -120,39 +130,64 @@ int sc_main(int argc, char **argv) {
 
 	tlm::tlm_global_quantum::instance().set(sc_core::sc_time(opt.tlm_global_quantum, sc_core::SC_NS));
 
-	ISS core(0, opt.use_E_base_isa);
+	ISS core0(0, opt.use_E_base_isa);
+	ISS core1(1, opt.use_E_base_isa);
+	CombinedMemoryInterface core0_mem_if("MemoryInterface0", core0);
+	CombinedMemoryInterface core1_mem_if("MemoryInterface1", core1);
+
 	SimpleMemory mem("SimpleMemory", opt.mem_size);
 	SimpleTerminal term("SimpleTerminal");
 	ELFLoader loader(opt.input_program.c_str());
-	SimpleBus<3, 13> bus("SimpleBus");
-	CombinedMemoryInterface iss_mem_if("MemoryInterface", core);
+	// SimpleBus<3, 13> bus("SimpleBus");
+	SimpleBus<5, 15> bus("SimpleBus"); 
 	SyscallHandler sys("SyscallHandler");
-	FE310_PLIC<1, 64, 96, 32> plic("PLIC");
-	CLINT<1> clint("CLINT");
+	// FE310_PLIC<1, 64, 96, 32> plic("PLIC");
+	FE310_PLIC<2, 64, 96, 32> plic("PLIC");
+	// CLINT<1> clint("CLINT");
+	CLINT<2> clint("CLINT");	// one more clint
 	SimpleSensor sensor("SimpleSensor", 2);
 	SimpleSensor2 sensor2("SimpleSensor2", 5);
 	BasicTimer timer("BasicTimer", 3);
 	SimpleMRAM mram("SimpleMRAM", opt.mram_image, opt.mram_size);
-	SimpleDMA dma("SimpleDMA", 4);
+	// SimpleDMA dma("SimpleDMA", 4);
+	SimpleDMA dma0("SimpleDMA0", 4);
+	SimpleDMA dma1("SimpleDMA1", 4);
 	Flashcontroller flashController("Flashcontroller", opt.flash_device);
 	EthernetDevice ethernet("EthernetDevice", 7, mem.data, opt.network_device);
 	Display display("Display");
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
 	// MedianMeanFilter median_mean_filter("median_mean_filter");
-	AutocorrelationFunction autocorrelation_function("autocorrelation_function");
+	AutocorrelationFunction autocorrelation_function0("autocorrelation_function0");
+	AutocorrelationFunction autocorrelation_function1("autocorrelation_function1");
 
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
-	InstrMemoryProxy instr_mem(dmi, core);
+	// InstrMemoryProxy instr_mem(dmi, core);
+	InstrMemoryProxy instr_mem0(dmi, core0);
+	InstrMemoryProxy instr_mem1(dmi, core1);
 
 	std::shared_ptr<BusLock> bus_lock = std::make_shared<BusLock>();
-	iss_mem_if.bus_lock = bus_lock;
+	// iss_mem_if.bus_lock = bus_lock;
+	core0_mem_if.bus_lock = bus_lock;
+	core1_mem_if.bus_lock = bus_lock;
 
-	instr_memory_if *instr_mem_if = &iss_mem_if;
-	data_memory_if *data_mem_if = &iss_mem_if;
-	if (opt.use_instr_dmi)
-		instr_mem_if = &instr_mem;
+	// instr_memory_if *instr_mem_if = &iss_mem_if;
+	// data_memory_if *data_mem_if = &iss_mem_if;
+	// if (opt.use_instr_dmi)
+	// 	instr_mem_if = &instr_mem;
+	// if (opt.use_data_dmi) {
+	// 	iss_mem_if.dmi_ranges.emplace_back(dmi);
+	// }
+	instr_memory_if *instr_mem_if_0 = &core0_mem_if;
+	data_memory_if *data_mem_if_0 = &core0_mem_if;
+	instr_memory_if *instr_mem_if_1 = &core1_mem_if;
+	data_memory_if *data_mem_if_1 = &core1_mem_if;
+	if (opt.use_instr_dmi) {
+		instr_mem_if_0 = &instr_mem0;
+		instr_mem_if_1 = &instr_mem1;
+	}
 	if (opt.use_data_dmi) {
-		iss_mem_if.dmi_ranges.emplace_back(dmi);
+		core0_mem_if.dmi_ranges.emplace_back(dmi);
+		core1_mem_if.dmi_ranges.emplace_back(dmi);
 	}
 
 	uint64_t entry_point = loader.get_entrypoint();
@@ -166,12 +201,19 @@ int sc_main(int argc, char **argv) {
 		std::cerr << opt << std::endl;
 		return -1;
 	}
-	core.init(instr_mem_if, data_mem_if, &clint, entry_point, rv32_align_address(opt.mem_end_addr));
+	// core.init(instr_mem_if, data_mem_if, &clint, entry_point, rv32_align_address(opt.mem_end_addr));
+	core0.init(instr_mem_if_0, data_mem_if_0, &clint, entry_point, opt.mem_end_addr - 3);
+	core1.init(instr_mem_if_1, data_mem_if_1, &clint, entry_point, opt.mem_end_addr - 32767);
 	sys.init(mem.data, opt.mem_start_addr, loader.get_heap_addr());
-	sys.register_core(&core);
+	// sys.register_core(&core);
+	sys.register_core(&core0);
+	sys.register_core(&core1);
 
-	if (opt.intercept_syscalls)
-		core.sys = &sys;
+	if (opt.intercept_syscalls) {
+		// core.sys = &sys;
+		core0.sys = &sys;
+		core1.sys = &sys;
+	}
 
 	// address mapping
 	bus.ports[0] = new PortMapping(opt.mem_start_addr, opt.mem_end_addr);
@@ -179,63 +221,99 @@ int sc_main(int argc, char **argv) {
 	bus.ports[2] = new PortMapping(opt.plic_start_addr, opt.plic_end_addr);
 	bus.ports[3] = new PortMapping(opt.term_start_addr, opt.term_end_addr);
 	bus.ports[4] = new PortMapping(opt.sensor_start_addr, opt.sensor_end_addr);
-	bus.ports[5] = new PortMapping(opt.dma_start_addr, opt.dma_end_addr);
-	bus.ports[6] = new PortMapping(opt.sensor2_start_addr, opt.sensor2_end_addr);
-	bus.ports[7] = new PortMapping(opt.mram_start_addr, opt.mram_end_addr);
-	bus.ports[8] = new PortMapping(opt.flash_start_addr, opt.flash_end_addr);
-	bus.ports[9] = new PortMapping(opt.ethernet_start_addr, opt.ethernet_end_addr);
-	bus.ports[10] = new PortMapping(opt.display_start_addr, opt.display_end_addr);
-	bus.ports[11] = new PortMapping(opt.sys_start_addr, opt.sys_end_addr);
+	// bus.ports[5] = new PortMapping(opt.dma_start_addr, opt.dma_end_addr);
+	bus.ports[5] = new PortMapping(opt.dma0_start_addr, opt.dma0_end_addr);
+	bus.ports[6] = new PortMapping(opt.dma1_start_addr, opt.dma1_end_addr);
+	bus.ports[7] = new PortMapping(opt.sensor2_start_addr, opt.sensor2_end_addr);
+	bus.ports[8] = new PortMapping(opt.mram_start_addr, opt.mram_end_addr);
+	bus.ports[9] = new PortMapping(opt.flash_start_addr, opt.flash_end_addr);
+	bus.ports[10] = new PortMapping(opt.ethernet_start_addr, opt.ethernet_end_addr);
+	bus.ports[11] = new PortMapping(opt.display_start_addr, opt.display_end_addr);
+	bus.ports[12] = new PortMapping(opt.sys_start_addr, opt.sys_end_addr);
 	// bus.ports[12] = new PortMapping(opt.median_mean_Filter_start_addr, opt.median_mean_Filter_end_addr);
-	bus.ports[12] = new PortMapping(opt.autocorrelation_function_start_addr, opt.autocorrelation_function_end_addr);
+	bus.ports[13] = new PortMapping(opt.autocorrelation_function0_start_addr, opt.autocorrelation_function0_end_addr);
+	bus.ports[14] = new PortMapping(opt.autocorrelation_function1_start_addr, opt.autocorrelation_function1_end_addr);
 
 	// connect TLM sockets
-	iss_mem_if.isock.bind(bus.tsocks[0]);
-	dbg_if.isock.bind(bus.tsocks[2]);
+	// iss_mem_if.isock.bind(bus.tsocks[0]);
+	core0_mem_if.isock.bind(bus.tsocks[0]);
+	core1_mem_if.isock.bind(bus.tsocks[1]);
+	dbg_if.isock.bind(bus.tsocks[4]);
 
-	PeripheralWriteConnector dma_connector("SimpleDMA-Connector");  // to respect ISS bus locking
-	dma_connector.isock.bind(bus.tsocks[1]);
-	dma.isock.bind(dma_connector.tsock);
-	dma_connector.bus_lock = bus_lock;
+	// PeripheralWriteConnector dma_connector("SimpleDMA-Connector");  // to respect ISS bus locking
+	// dma_connector.isock.bind(bus.tsocks[1]);
+	// dma.isock.bind(dma_connector.tsock);
+	// dma_connector.bus_lock = bus_lock;
+	PeripheralWriteConnector dma_connector0("SimpleDMA-Connector0");  // to respect ISS bus locking
+	PeripheralWriteConnector dma_connector1("SimpleDMA-Connector1");  // to respect ISS bus locking
+	dma_connector0.isock.bind(bus.tsocks[2]);
+	dma_connector1.isock.bind(bus.tsocks[3]);
+	dma0.isock.bind(dma_connector0.tsock);
+	dma1.isock.bind(dma_connector1.tsock);
+	dma_connector0.bus_lock = bus_lock;
+	dma_connector1.bus_lock = bus_lock;
 
 	bus.isocks[0].bind(mem.tsock);
 	bus.isocks[1].bind(clint.tsock);
 	bus.isocks[2].bind(plic.tsock);
 	bus.isocks[3].bind(term.tsock);
 	bus.isocks[4].bind(sensor.tsock);
-	bus.isocks[5].bind(dma.tsock);
-	bus.isocks[6].bind(sensor2.tsock);
-	bus.isocks[7].bind(mram.tsock);
-	bus.isocks[8].bind(flashController.tsock);
-	bus.isocks[9].bind(ethernet.tsock);
-	bus.isocks[10].bind(display.tsock);
-	bus.isocks[11].bind(sys.tsock);
+	// bus.isocks[5].bind(dma.tsock);
+	bus.isocks[5].bind(dma0.tsock);
+	bus.isocks[6].bind(dma1.tsock);
+	bus.isocks[7].bind(sensor2.tsock);
+	bus.isocks[8].bind(mram.tsock);
+	bus.isocks[9].bind(flashController.tsock);
+	bus.isocks[10].bind(ethernet.tsock);
+	bus.isocks[11].bind(display.tsock);
+	bus.isocks[12].bind(sys.tsock);
 	// bus.isocks[12].bind(median_mean_filter.tsock);
-	bus.isocks[12].bind(autocorrelation_function.tsock);
+	bus.isocks[13].bind(autocorrelation_function0.tsock);
+	bus.isocks[14].bind(autocorrelation_function1.tsock);
 
 	// connect interrupt signals/communication
-	plic.target_harts[0] = &core;
-	clint.target_harts[0] = &core;
+	// plic.target_harts[0] = &core;
+	// clint.target_harts[0] = &core;
+	plic.target_harts[0] = &core0;
+	clint.target_harts[0] = &core0;
+	plic.target_harts[1] = &core1;
+	clint.target_harts[1] = &core1;
 	sensor.plic = &plic;
-	dma.plic = &plic;
+	// dma.plic = &plic;
+	dma0.plic = &plic;
+	dma1.plic = &plic;
 	timer.plic = &plic;
 	sensor2.plic = &plic;
 	ethernet.plic = &plic;
 
 	std::vector<debug_target_if *> threads;
-	threads.push_back(&core);
+	// threads.push_back(&core);
+	threads.push_back(&core0);
+	threads.push_back(&core1);
 
-	core.trace = opt.trace_mode;  // switch for printing instructions
+	// core.trace = opt.trace_mode;  // switch for printing instructions
+	// if (opt.use_debug_runner) {
+	// 	auto server = new GDBServer("GDBServer", threads, &dbg_if, opt.debug_port);
+	// 	new GDBServerRunner("GDBRunner", server, &core);
+	// } else {
+	// 	new DirectCoreRunner(core);
+	// }
+	core0.trace = opt.trace_mode;  // switch for printing instructions
+	core1.trace = opt.trace_mode;  // switch for printing instructions
 	if (opt.use_debug_runner) {
 		auto server = new GDBServer("GDBServer", threads, &dbg_if, opt.debug_port);
-		new GDBServerRunner("GDBRunner", server, &core);
+		new GDBServerRunner("GDBRunner", server, &core0);
+		new GDBServerRunner("GDBRunner", server, &core1);
 	} else {
-		new DirectCoreRunner(core);
+		new DirectCoreRunner(core0);
+		new DirectCoreRunner(core1);
 	}
 
 	sc_core::sc_start();
 
-	core.show();
+	// core.show();
+	core0.show();
+	core1.show();
 
 	if (opt.test_signature != "") {
 		auto begin_sig = loader.get_begin_signature_address();
