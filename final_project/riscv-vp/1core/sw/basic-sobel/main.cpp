@@ -28,7 +28,7 @@ static volatile uint32_t * const DMA_OP_ADDR   = (uint32_t * const)0x7000000C;
 static volatile uint32_t * const DMA_STAT_ADDR = (uint32_t * const)0x70000010;
 static const uint32_t DMA_OP_MEMCPY = 1;
 
-bool _is_using_dma = false;
+bool _is_using_dma = true;
 unsigned char *input_data;
 unsigned int *golden_data;
 unsigned int *result_data;
@@ -83,6 +83,7 @@ void validate()
 }
 
 void write_data_to_ACC(char* ADDR, unsigned char* buffer, int len){
+    cout << "write..." << endl;
     if(_is_using_dma){  
         // Using DMA 
         *DMA_SRC_ADDR = (uint32_t)(buffer);
@@ -96,6 +97,7 @@ void write_data_to_ACC(char* ADDR, unsigned char* buffer, int len){
 }
 
 void read_data_from_ACC(char* ADDR, unsigned char* buffer, int len){
+    cout << "reading..." << endl;
     if(_is_using_dma){
         // Using DMA 
         *DMA_SRC_ADDR = (uint32_t)(ADDR);
@@ -109,6 +111,10 @@ void read_data_from_ACC(char* ADDR, unsigned char* buffer, int len){
 }
 
 int main(int argc, char *argv[]) {
+    if (_is_using_dma)
+        cout << "_is_using_dma = true" << endl;
+    else
+        cout << "_is_using_dma = false" << endl;
     read_input_and_golden("./data/sin_wave.dat", "./data/sin_wave_golden.dat");
 
     unsigned char  buffer[4] = {0};
