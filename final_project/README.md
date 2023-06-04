@@ -1,4 +1,4 @@
-# Final Project
+# final_project
 - This folder contains all files for final project
 - [data](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/data): the folder that contains the test data, golden data, and the python script to generate them.
 - [memlib](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/memlib): the memory library for HLS implementation part. Three memories are avalible: RAM_1000X8, RAM_500X8, RAM_250X8.
