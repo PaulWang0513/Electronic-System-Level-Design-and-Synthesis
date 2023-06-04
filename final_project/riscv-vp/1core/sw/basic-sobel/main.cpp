@@ -132,9 +132,9 @@ int main(int argc, char *argv[]) {
         memcpy(data.uc, buffer, 4);
         ACF_status = data.uint;
     }
+    cout << "status register: " << ACF_status << endl;
     // start counting time
     gettimeofday(&start_time, NULL);
-    gettimeofday(&end_time, NULL);
 
     for (int i=0; i<SIGNAL_LEN; i++) {
         buffer[0] = input_data[i];
@@ -154,7 +154,9 @@ int main(int argc, char *argv[]) {
         memcpy(data.uc, buffer, 4);
         ACF_status = data.uint;
     }
+    cout << "status register: " << ACF_status << endl;
     // stop counting time
+    gettimeofday(&end_time, NULL);
 
     validate();
 
