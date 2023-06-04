@@ -41,7 +41,7 @@
   - `cd ee6470`
   - `cp -r final_project/riscv-vp/1core/vp/src/platform/* riscv-vp/vp/src/platform`
   - `cp -r final_project/riscv-vp/1core/sw/* riscv-vp/sw`
-  - `cd ee6470/riscv-vp/vp/build`
+  - `cd ./riscv-vp/vp/build`
   - `cmake ..`
   - `make install`
   - `cd ../../sw/basic-sobel`
@@ -51,7 +51,7 @@
   - `cd ee6470`
   - `cp -r final_project/riscv-vp/2core/vp/src/platform/* riscv-vp/vp/src/platform`
   - `cp -r final_project/riscv-vp/2core/sw/* riscv-vp/sw`
-  - `cd ee6470/riscv-vp/vp/build`
+  - `cd ./riscv-vp/vp/build`
   - `cmake ..`
   - `make install`
   - `cd ../../sw/basic-sobel`
