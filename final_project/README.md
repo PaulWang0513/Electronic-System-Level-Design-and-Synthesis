@@ -2,7 +2,9 @@
 - This folder contains all files for final project
 - [data](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/data): the folder that contains the test data, golden data, and the python script to generate them.
 - [memlib](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/memlib): the memory library for HLS implementation part. Three memories are avalible: RAM_1000X8, RAM_500X8, RAM_250X8.
-- [risv-vp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/risv-vp): the folder that contains the code for riscv-vp implementation part. Both 1core and 2core version are included.
+- [riscv-vp](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/riscv-vp): the folder that contains the code for riscv-vp implementation part. Both 1core and 2core version are included.
+  - [1core](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/riscv-vp/1core): the folder that contains the code for single core version.
+  - [2core](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/riscv-vp/2core): the folder that contains the code for multi core version.
 - [source](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/source): the folder that contains the source code for HLS implementation part.
 - [stratus](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/stratus): the folder that contains project.tcl to run the HLS implementation on Stratus HLS.
 
@@ -33,21 +35,28 @@
 ### RISCV-VP
 - Assum the directory structure is as follows:
   - ee6470/
-    - hw4/
+    - final_project/
     - riscv-vp/
-- You can choose the test image by modifying the `test_image` variable in `hw4\riscv-vp\sw\basic-sobel\main.cpp`
-  - Available test image name: `lena_std_short`, `lake_noise`, `jetplane_noise` (default)
-- Run the following commands:
+- Single core version:
   - `cd ee6470`
-  - `cp -r hw4/riscv-vp/vp/src/platform/* riscv-vp/vp/src/platform`
-  - `cp -r hw4/riscv-vp/sw/* riscv-vp/sw`
+  - `cp -r final_project/riscv-vp/1core/vp/src/platform/* riscv-vp/vp/src/platform`
+  - `cp -r final_project/riscv-vp/1core/sw/* riscv-vp/sw`
   - `cd ee6470/riscv-vp/vp/build`
   - `cmake ..`
   - `make install`
-  - `cd ee6470/riscv-vp/sw/basic-sobel`
+  - `cd ../../sw/basic-sobel`
   - `make`
   - `make sim`
-
+- Multi core version:
+  - `cd ee6470`
+  - `cp -r final_project/riscv-vp/2core/vp/src/platform/* riscv-vp/vp/src/platform`
+  - `cp -r final_project/riscv-vp/2core/sw/* riscv-vp/sw`
+  - `cd ee6470/riscv-vp/vp/build`
+  - `cmake ..`
+  - `make install`
+  - `cd ../../sw/basic-sobel`
+  - `make`
+  - `make sim`
 
 ## HLS result recording
 
