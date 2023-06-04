@@ -6,10 +6,31 @@
 - [source](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/source): the folder that contains the source code for HLS implementation part.
 - [stratus](https://github.com/PaulWang0513/Electronic-System-Level-Design-and-Synthesis/tree/main/final_project/stratus): the folder that contains project.tcl to run the HLS implementation on Stratus HLS.
 
-
-
-
 ## Quick Run
+### HLS 
+- By default, it runs the simulation of BASIC implementation. To run other implementation, modify the `source/AutocorrelationFunction.h` line 11.
+- `cd stratus`
+- BASIC implementation
+  - Behavioral simulation: `make sim_BASIC_B`
+  - Synthesis and RTL simulation: `make sim_BASIC_V`
+- MEM_1000X2 implementation
+  - Modify the `source/AutocorrelationFunction.h` line 11 to `#define MEM_1000X2`
+  - Behavioral simulation: `make sim_MEM_1000X2_B`
+  - Synthesis and RTL simulation: `make sim_MEM_1000X2_V`
+- MEM_500X2 implementation
+  - Modify the `source/AutocorrelationFunction.h` line 11 to `#define MEM_500X2`
+  - Behavioral simulation: `make sim_MEM_500X2_B`
+  - Synthesis and RTL simulation: `make sim_MEM_500X2_V`
+- MEM_250X4 implementation
+  - Modify the `source/AutocorrelationFunction.h` line 11 to `#define MEM_250X4`
+  - Behavioral simulation: `make sim_MEM_250X4_B`
+  - Synthesis and RTL simulation: `make sim_MEM_250X4_V`
+- MEM_250X4_AREA implementation
+  - Modify the `source/AutocorrelationFunction.h` line 11 to `#define MEM_250X4_AREA`
+  - Behavioral simulation: `make sim_MEM_250X4_AREA_B`
+  - Synthesis and RTL simulation: `make sim_MEM_250X4_AREA_V`
+
+### RISCV-VP
 - Assum the directory structure is as follows:
   - ee6470/
     - hw4/

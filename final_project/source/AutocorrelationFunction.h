@@ -8,7 +8,7 @@ using namespace sc_core;
 
 // change this to select the implementation to do simulation or synthesis
 // avaliable options: BASIC, MEM_1000X2, MEM_500X2, MEM_250X4, MEM_250X4_AREA
-#define MEM_250X4_AREA
+#define BASIC
 
 class AutocorrelationFunction : public sc_module {
 public:
