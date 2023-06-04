@@ -20,11 +20,12 @@ public:
     sc_fifo<sc_dt::sc_uint<26>> o_result;
     // cynw_p2p<sc_dt::sc_uint<8>>::in   i_data;
     // cynw_p2p<sc_dt::sc_uint<26>>::out o_result;
+    unsigned int status_reg;     // 1 for working, 0 for idle
 
     SC_HAS_PROCESS(AutocorrelationFunction);
 
     AutocorrelationFunction(sc_module_name n) : 
-        sc_module(n), tsock("t_skt") 
+        sc_module(n), tsock("t_skt"), status_reg(0)
     {
         tsock.register_b_transport(this, &AutocorrelationFunction::blocking_transport);
         SC_THREAD(do_ACF);
@@ -50,6 +51,7 @@ public:
             wait(CLOCK_PERIOD, SC_NS);
         }
 
+        status_reg = 1;
         // main loop
         while (true) {
             // ========== read input ==========
@@ -154,6 +156,8 @@ public:
                 o_result.write(sum);
                 wait(CLOCK_PERIOD, SC_NS);
             }
+
+            status_reg = 0;
         }
     }
 
@@ -176,6 +180,9 @@ public:
             switch (addr) {
             case ACF_RESULT_ADDR:
                 buffer.uint = o_result.read();
+                break;
+            case ACF_STATUS_ADDR:
+                buffer.uint = status_reg;
                 break;
             default:
                 std::cerr << "READ Error! MedianMeanFilter::blocking_transport: address 0x"

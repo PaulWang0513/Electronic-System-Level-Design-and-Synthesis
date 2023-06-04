@@ -6,6 +6,7 @@
 #include "stdint.h"
 #include <iostream>
 #include <fstream>
+#include <sys/time.h>
 using namespace std;
 
 const int SIGNAL_LEN = 1000;
@@ -19,6 +20,7 @@ union word {
 // ACF ACC
 static char* const ACF_START_ADDR = reinterpret_cast<char* const>(0x73000000);
 static char* const ACF_READ_ADDR  = reinterpret_cast<char* const>(0x73000004);
+static char* const ACF_STATUS_ADDR = reinterpret_cast<char* const>(0x73000008);
 
 // DMA 
 static volatile uint32_t * const DMA_SRC_ADDR  = (uint32_t * const)0x70000000;
@@ -110,6 +112,8 @@ void read_data_from_ACC(char* ADDR, unsigned char* buffer, int len){
     }
 }
 
+struct timeval start_time, end_time;
+
 int main(int argc, char *argv[]) {
     if (_is_using_dma)
         cout << "_is_using_dma = true" << endl;
@@ -120,6 +124,17 @@ int main(int argc, char *argv[]) {
     unsigned char  buffer[4] = {0};
     word data;
     int total;
+
+    unsigned ACF_status = 0;
+
+    while (ACF_status != 1) {
+        read_data_from_ACC(ACF_STATUS_ADDR, buffer, 4);
+        memcpy(data.uc, buffer, 4);
+        ACF_status = data.uint;
+    }
+    // start counting time
+    gettimeofday(&start_time, NULL);
+    gettimeofday(&end_time, NULL);
 
     for (int i=0; i<SIGNAL_LEN; i++) {
         buffer[0] = input_data[i];
@@ -134,5 +149,18 @@ int main(int argc, char *argv[]) {
         result_data[i] = (data).sint;
     }
 
+    while (ACF_status == 1) {
+        read_data_from_ACC(ACF_STATUS_ADDR, buffer, 4);
+        memcpy(data.uc, buffer, 4);
+        ACF_status = data.uint;
+    }
+    // stop counting time
+
     validate();
+
+    cout << "start_time.tv_sec = " << start_time.tv_sec << endl;
+    cout << "start_time.tv_usec = " << start_time.tv_usec << endl;
+    cout << "end_time.tv_sec = " << end_time.tv_sec << endl;
+    cout << "end_time.tv_usec = " << end_time.tv_usec << endl;
+    cout << "Simultation time == " << (end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec) << " us" << endl;
 }

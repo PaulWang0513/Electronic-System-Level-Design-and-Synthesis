@@ -11,6 +11,7 @@ const int SIGNAL_LEN = 1000;
 // Used between blocking_transport() & do_filter()
 const int ACF_R_ADDR = 0x00000000;
 const int ACF_RESULT_ADDR = 0x00000004;
+const int ACF_STATUS_ADDR = 0x00000008;
 
 union word {
     int sint;
